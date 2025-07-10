@@ -119,7 +119,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Client</label>
-                        <select name="client_id" class="form-select">
+                        <select name="client_id" class="form-select client-select">
                             <option value="">All Clients</option>
                             @foreach($clients as $client)
                                 <option value="{{ $client->id }}" {{ request('client_id') == $client->id ? 'selected' : '' }}>
@@ -360,3 +360,17 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Initialize Select2 for client dropdowns
+    $('.client-select').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'All Clients',
+        allowClear: true,
+        width: '100%'
+    });
+});
+</script>
+@endpush

@@ -5,7 +5,15 @@
 @push('styles')
 <style>
     .upload-area {
-        border: 2px dashed #007bff;
+        border:                                    <select class="form-select client-select @error('client_id') is-invalid @enderror"
+                                            id="client_id" name="client_id">
+                                        <option value="">None (General Document)</option>
+                                        @foreach($clients as $id => $name)
+                                            <option value="{{ $id }}" {{ (old('client_id', $selectedClientId) == $id) ? 'selected' : '' }}>
+                                                {{ $name }}
+                                            </option>
+                                        @endforeach
+                                    </select>ed #007bff;
         border-radius: 10px;
         padding: 40px;
         text-align: center;
@@ -288,6 +296,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
+
+    // Initialize Select2 for client dropdowns
+    $('.client-select').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'None (General Document)',
+        allowClear: true,
+        width: '100%'
+    });
 });
 </script>
 @endpush

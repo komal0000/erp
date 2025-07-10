@@ -52,7 +52,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <select name="client_id" class="form-select">
+                                <select name="client_id" class="form-select client-select">
                                     <option value="">All Clients</option>
                                     @foreach($clients as $client)
                                         <option value="{{ $client->id }}" {{ request('client_id') == $client->id ? 'selected' : '' }}>
@@ -189,6 +189,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Initialize Select2 for client dropdowns
+    $('.client-select').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'All Clients',
+        allowClear: true,
+        width: '100%'
     });
 });
 </script>

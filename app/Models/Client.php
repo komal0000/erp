@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\ClientCacheService;
 
 class Client extends Model
 {
@@ -22,6 +23,21 @@ class Client extends Model
     protected $casts = [
         // services removed since it's now a relationship
     ];
+
+    // Boot method to handle cache clearing
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Clear cache when client is created, updated, or deleted
+        static::saved(function ($client) {
+            ClientCacheService::clearCache();
+        });
+
+        static::deleted(function ($client) {
+            ClientCacheService::clearCache();
+        });
+    }
 
     // Relationships
     public function user()

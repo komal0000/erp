@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\Client;
 use App\Models\Employee;
 use App\Models\CallLog;
+use App\Services\ClientCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +47,7 @@ class TaskController extends Controller
         }
 
         $tasks = $query->paginate(15)->withQueryString();
-        $clients = Client::orderBy('company_name')->get();
+        $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
 
         return view('tasks.index', compact('tasks', 'clients', 'employees'));
@@ -81,7 +82,7 @@ class TaskController extends Controller
         }
 
         $tasks = $query->paginate(15)->withQueryString();
-        $clients = Client::orderBy('company_name')->get();
+        $clients = ClientCacheService::getClientsCollection();
 
         return view('tasks.my-tasks', compact('tasks', 'clients'));
     }
@@ -90,7 +91,7 @@ class TaskController extends Controller
      * Show the form for creating a new resource.
      */    public function create(Request $request)
     {
-        $clients = Client::orderBy('company_name')->get();
+        $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
 
         // Auto-select client if coming from client view
@@ -111,12 +112,9 @@ class TaskController extends Controller
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|integer|min:1|max:9',
-            'due_date' => 'nullable|date|after_or_equal:today',
             'started_at' => 'nullable|date',
             'completed_at' => 'nullable|date',
-            'notes' => 'nullable|string',
-            'estimated_hours' => 'nullable|numeric|min:0',
-            'actual_hours' => 'nullable|numeric|min:0'
+            'notes' => 'nullable|string'
         ]);
 
         // Set call_log_id to null since we're creating standalone tasks
@@ -153,7 +151,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        $clients = Client::orderBy('company_name')->get();
+        $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
 
         return view('tasks.edit', compact('task', 'clients', 'employees'));
@@ -171,12 +169,9 @@ class TaskController extends Controller
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|integer|min:1|max:9',
-            'due_date' => 'nullable|date',
             'started_at' => 'nullable|date',
             'completed_at' => 'nullable|date',
-            'notes' => 'nullable|string',
-            'estimated_hours' => 'nullable|numeric|min:0',
-            'actual_hours' => 'nullable|numeric|min:0'
+            'notes' => 'nullable|string'
         ]);
 
         $task->update($validated);

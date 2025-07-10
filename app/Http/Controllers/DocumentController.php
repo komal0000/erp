@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\DocumentCategory;
 use App\Models\Client;
 use App\Models\User;
+use App\Services\ClientCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -62,7 +63,7 @@ class DocumentController extends Controller
 
         $documents = $query->paginate(20);
         $categories = DocumentCategory::active()->ordered()->get();
-        $clients = Client::orderBy('company_name')->get();
+        $clients = ClientCacheService::getClientsCollection();
 
         return view('documents.index', compact('documents', 'categories', 'clients'));
     }
@@ -73,7 +74,7 @@ class DocumentController extends Controller
     public function create(Request $request)
     {
         $categories = DocumentCategory::getSelectOptions();
-        $clients = Client::orderBy('company_name')->pluck('company_name', 'id');
+        $clients = ClientCacheService::getClientsForSelect();
         $users = User::where('id', '!=', Auth::id())->orderBy('name')->pluck('name', 'id');
         $selectedClientId = $request->get('client_id');
 
@@ -149,7 +150,7 @@ class DocumentController extends Controller
         }
 
         $categories = DocumentCategory::getSelectOptions();
-        $clients = Client::orderBy('company_name')->pluck('company_name', 'id');
+        $clients = ClientCacheService::getClientsForSelect();
         $users = User::where('id', '!=', Auth::id())->orderBy('name')->pluck('name', 'id');
 
         return view('documents.edit', compact('document', 'categories', 'clients', 'users'));
