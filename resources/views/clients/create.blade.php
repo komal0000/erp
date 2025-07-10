@@ -89,6 +89,85 @@
                         </div>
                     </div>
 
+                    <!-- Phone Numbers -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                <h5 class="mb-0">Phone Numbers</h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addPhone">
+                                    <i class="fas fa-plus me-1"></i>Add Phone
+                                </button>
+                            </div>
+                            <div id="phoneContainer">
+                                <div class="row phone-item mb-3">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="phones[0][phone]" placeholder="Phone number" value="{{ old('phones.0.phone') }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="phones[0][type]" 
+                                               placeholder="Type (e.g., Primary, Mobile)" 
+                                               list="phoneTypes" 
+                                               value="{{ old('phones.0.type', 'Primary') }}">
+                                        <datalist id="phoneTypes">
+                                            <option value="Primary">
+                                            <option value="Mobile">
+                                            <option value="Office">
+                                            <option value="Fax">
+                                            <option value="Home">
+                                            <option value="Work">
+                                            <option value="Emergency">
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-phone" style="display: none;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Addresses -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                <h5 class="mb-0">Additional Email Addresses</h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addEmail">
+                                    <i class="fas fa-plus me-1"></i>Add Email
+                                </button>
+                            </div>
+                            <div id="emailContainer">
+                                <div class="row email-item mb-3">
+                                    <div class="col-md-6">
+                                        <input type="email" class="form-control" name="emails[0][email]" placeholder="Additional email address" value="{{ old('emails.0.email') }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="emails[0][type]" 
+                                               placeholder="Type (e.g., Secondary, Billing)" 
+                                               list="emailTypes" 
+                                               value="{{ old('emails.0.type', 'Secondary') }}">
+                                        <datalist id="emailTypes">
+                                            <option value="Secondary">
+                                            <option value="Billing">
+                                            <option value="Support">
+                                            <option value="Personal">
+                                            <option value="Finance">
+                                            <option value="Legal">
+                                            <option value="HR">
+                                            <option value="Technical">
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-email" style="display: none;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Services -->
                     <div class="row mb-4">
                         <div class="col-12">
@@ -259,6 +338,87 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Phone and Email Management
+    let phoneIndex = 1;
+    let emailIndex = 1;
+
+    // Add phone functionality
+    document.getElementById('addPhone').addEventListener('click', function() {
+        const phoneContainer = document.getElementById('phoneContainer');
+        const phoneHTML = `
+            <div class="row phone-item mb-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="phones[${phoneIndex}][phone]" placeholder="Phone number">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="phones[${phoneIndex}][type]" 
+                           placeholder="Type (e.g., Primary, Mobile)" 
+                           list="phoneTypes" 
+                           value="Primary">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-phone">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        phoneContainer.insertAdjacentHTML('beforeend', phoneHTML);
+        phoneIndex++;
+        updateRemoveButtons('phone');
+    });
+
+    // Add email functionality
+    document.getElementById('addEmail').addEventListener('click', function() {
+        const emailContainer = document.getElementById('emailContainer');
+        const emailHTML = `
+            <div class="row email-item mb-3">
+                <div class="col-md-6">
+                    <input type="email" class="form-control" name="emails[${emailIndex}][email]" placeholder="Additional email address">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="emails[${emailIndex}][type]" 
+                           placeholder="Type (e.g., Secondary, Billing)" 
+                           list="emailTypes" 
+                           value="Secondary">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-email">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        emailContainer.insertAdjacentHTML('beforeend', emailHTML);
+        emailIndex++;
+        updateRemoveButtons('email');
+    });
+
+    // Remove phone/email functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-phone')) {
+            e.target.closest('.phone-item').remove();
+            updateRemoveButtons('phone');
+        }
+        if (e.target.closest('.remove-email')) {
+            e.target.closest('.email-item').remove();
+            updateRemoveButtons('email');
+        }
+    });
+
+    // Update remove buttons visibility
+    function updateRemoveButtons(type) {
+        const items = document.querySelectorAll(`.${type}-item`);
+        items.forEach((item, index) => {
+            const removeBtn = item.querySelector(`.remove-${type}`);
+            if (items.length > 1) {
+                removeBtn.style.display = 'block';
+            } else {
+                removeBtn.style.display = 'none';
+            }
+        });
+    }
 });
 </script>
 @endsection

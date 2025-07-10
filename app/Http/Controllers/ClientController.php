@@ -47,6 +47,12 @@ class ClientController extends Controller
             'services' => 'nullable|array',
             'assigned_employees' => 'nullable|array',
             'assigned_employees.*' => 'exists:employees,id',
+            'phones' => 'nullable|array',
+            'phones.*.phone' => 'nullable|string|max:20',
+            'phones.*.type' => 'nullable|string|max:50',
+            'emails' => 'nullable|array',
+            'emails.*.email' => 'nullable|email',
+            'emails.*.type' => 'nullable|string|max:50',
         ]);
 
         try {
@@ -79,6 +85,30 @@ class ClientController extends Controller
                         'access_granted_date' => now(),
                         'is_active' => true,
                     ]);
+                }
+            }
+
+            // Create phone numbers
+            if ($request->phones) {
+                foreach ($request->phones as $phoneData) {
+                    if (!empty($phoneData['phone'])) {
+                        $client->phones()->create([
+                            'phone' => $phoneData['phone'],
+                            'type' => $phoneData['type'] ?? 'primary',
+                        ]);
+                    }
+                }
+            }
+
+            // Create email addresses
+            if ($request->emails) {
+                foreach ($request->emails as $emailData) {
+                    if (!empty($emailData['email'])) {
+                        $client->emails()->create([
+                            'email' => $emailData['email'],
+                            'type' => $emailData['type'] ?? 'secondary',
+                        ]);
+                    }
                 }
             }
 
@@ -125,6 +155,12 @@ class ClientController extends Controller
             'status' => 'required|in:active,inactive,suspended',
             'assigned_employees' => 'nullable|array',
             'assigned_employees.*' => 'exists:employees,id',
+            'phones' => 'nullable|array',
+            'phones.*.phone' => 'nullable|string|max:20',
+            'phones.*.type' => 'nullable|string|max:50',
+            'emails' => 'nullable|array',
+            'emails.*.email' => 'nullable|email',
+            'emails.*.type' => 'nullable|string|max:50',
         ]);
 
         try {
@@ -156,6 +192,32 @@ class ClientController extends Controller
                         'access_granted_date' => now(),
                         'is_active' => true,
                     ]);
+                }
+            }
+
+            // Update phone numbers
+            $client->phones()->delete(); // Remove existing phones
+            if ($request->phones) {
+                foreach ($request->phones as $phoneData) {
+                    if (!empty($phoneData['phone'])) {
+                        $client->phones()->create([
+                            'phone' => $phoneData['phone'],
+                            'type' => $phoneData['type'] ?? 'primary',
+                        ]);
+                    }
+                }
+            }
+
+            // Update email addresses
+            $client->emails()->delete(); // Remove existing emails
+            if ($request->emails) {
+                foreach ($request->emails as $emailData) {
+                    if (!empty($emailData['email'])) {
+                        $client->emails()->create([
+                            'email' => $emailData['email'],
+                            'type' => $emailData['type'] ?? 'secondary',
+                        ]);
+                    }
                 }
             }
 
