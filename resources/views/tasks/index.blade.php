@@ -114,7 +114,7 @@
                                             <td>{{ $task->assignedTo->user->name }}</td>
                                             <td>
                                                 @if($task->callLog)
-                                                    <a href="{{ route('call-logs.show', $task->callLog) }}" 
+                                                    <a href="{{ route('call-logs.show', $task->callLog) }}"
                                                        class="badge bg-info text-decoration-none">
                                                         Call #{{ $task->callLog->id }}
                                                     </a>
@@ -123,8 +123,8 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('tasks.show', $task) }}" 
-                                                   class="btn btn-sm btn-outline-primary" 
+                                                <a href="{{ route('tasks.show', $task) }}"
+                                                   class="btn btn-sm btn-outline-primary"
                                                    data-bs-toggle="tooltip" title="View">
                                                     <i class="fas fa-eye"></i>
                                                 </a>

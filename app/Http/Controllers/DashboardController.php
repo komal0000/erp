@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Client;
 use App\Models\Employee;
+use App\Models\CallLog;
+use App\Models\Task;
 
 class DashboardController extends Controller
 {
@@ -20,7 +22,22 @@ class DashboardController extends Controller
         $activeClients = Client::where('status', 'active')->count();
         $recentClients = Client::with('user')->latest()->take(5)->get();
 
-        return view('dashboard.admin', compact('totalClients', 'totalEmployees', 'activeClients', 'recentClients'));
+        // Call logs statistics
+        $totalCallLogs = CallLog::count();
+        $pendingCallLogs = CallLog::where('status', CallLog::STATUS_PENDING)->count();
+        $recentCallLogs = CallLog::with(['client', 'employee.user'])->latest()->take(5)->get();
+
+        // Tasks statistics
+        $totalTasks = Task::count();
+        $pendingTasks = Task::where('status', Task::STATUS_PENDING)->count();
+        $inProgressTasks = Task::where('status', Task::STATUS_IN_PROGRESS)->count();
+        $recentTasks = Task::with(['client', 'assignedEmployee.user'])->latest()->take(5)->get();
+
+        return view('dashboard.admin', compact(
+            'totalClients', 'totalEmployees', 'activeClients', 'recentClients',
+            'totalCallLogs', 'pendingCallLogs', 'recentCallLogs',
+            'totalTasks', 'pendingTasks', 'inProgressTasks', 'recentTasks'
+        ));
     }
 
     /**
@@ -31,7 +48,16 @@ class DashboardController extends Controller
         $employee = Auth::user()->employee;
         $accessibleClients = $employee->accessibleClients()->where('is_active', true)->get();
 
-        return view('dashboard.employee', compact('employee', 'accessibleClients'));
+        // Employee-specific call logs and tasks
+        $myCallLogs = CallLog::where('employee_id', $employee->id)->latest()->take(5)->get();
+        $myTasks = Task::where('assigned_to', $employee->id)->latest()->take(5)->get();
+        $myPendingTasks = Task::where('assigned_to', $employee->id)
+                             ->where('status', Task::STATUS_PENDING)
+                             ->count();
+
+        return view('dashboard.employee', compact(
+            'employee', 'accessibleClients', 'myCallLogs', 'myTasks', 'myPendingTasks'
+        ));
     }
 
     /**
@@ -44,6 +70,12 @@ class DashboardController extends Controller
         $images = $client->images()->latest()->take(5)->get();
         $formResponses = $client->formResponses()->with('dynamicForm')->latest()->take(5)->get();
 
-        return view('dashboard.client', compact('client', 'documents', 'images', 'formResponses'));
+        // Client-specific call logs and tasks
+        $myCallLogs = CallLog::where('client_id', $client->id)->latest()->take(5)->get();
+        $myTasks = Task::where('client_id', $client->id)->latest()->take(5)->get();
+
+        return view('dashboard.client', compact(
+            'client', 'documents', 'images', 'formResponses', 'myCallLogs', 'myTasks'
+        ));
     }
 }

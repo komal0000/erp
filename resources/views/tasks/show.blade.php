@@ -77,7 +77,7 @@
                                     <div class="card-body">
                                         <p><strong>Subject:</strong> {{ $task->callLog->subject }}</p>
                                         <p><strong>Date:</strong> {{ $task->callLog->call_date->format('M d, Y H:i') }}</p>
-                                        <p><strong>Type:</strong> 
+                                        <p><strong>Type:</strong>
                                             <span class="badge bg-{{ $task->callLog->call_type === 'incoming' ? 'success' : 'info' }}">
                                                 {{ ucfirst($task->callLog->call_type) }}
                                             </span>
@@ -128,7 +128,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label for="notes" class="form-label">Add Notes</label>
-                                        <input type="text" name="notes" id="notes" class="form-control" 
+                                        <input type="text" name="notes" id="notes" class="form-control"
                                                placeholder="Add update notes...">
                                     </div>
                                     <div class="col-md-2">
@@ -166,13 +166,13 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     @if($task->started_at)
                         <p class="small text-muted mb-1">
                             <strong>Started:</strong> {{ $task->started_at->format('M d, Y H:i') }}
                         </p>
                     @endif
-                    
+
                     @if($task->completed_at)
                         <p class="small text-muted mb-0">
                             <strong>Completed:</strong> {{ $task->completed_at->format('M d, Y H:i') }}

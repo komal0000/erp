@@ -29,7 +29,7 @@ return new class extends Migration
             $table->integer('estimated_hours')->nullable();
             $table->integer('actual_hours')->nullable();
             $table->timestamps();
-            
+
             $table->index(['assigned_to', 'status']);
             $table->index(['client_id', 'status']);
             $table->index(['due_date', 'status']);

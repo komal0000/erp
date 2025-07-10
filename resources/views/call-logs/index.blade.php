@@ -134,16 +134,16 @@
                                             </td>
                                             <td>
                                                 <div class="dropdown">
-                                                    <button class="btn btn-sm btn-outline-{{ $callLog->status_color }} dropdown-toggle" 
-                                                            type="button" 
+                                                    <button class="btn btn-sm btn-outline-{{ $callLog->status_color }} dropdown-toggle"
+                                                            type="button"
                                                             data-bs-toggle="dropdown">
                                                         {{ $callLog->status_label }}
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         @foreach(\App\Models\CallLog::getStatusOptions() as $statusValue => $statusLabel)
                                                             <li>
-                                                                <a class="dropdown-item {{ $callLog->status == $statusValue ? 'active' : '' }}" 
-                                                                   href="#" 
+                                                                <a class="dropdown-item {{ $callLog->status == $statusValue ? 'active' : '' }}"
+                                                                   href="#"
                                                                    onclick="updateStatus({{ $callLog->id }}, {{ $statusValue }})">
                                                                     {{ $statusLabel }}
                                                                 </a>
@@ -157,7 +157,7 @@
                                             </td>
                                             <td>
                                                 @if($callLog->task)
-                                                    <a href="{{ route('tasks.show', $callLog->task) }}" 
+                                                    <a href="{{ route('tasks.show', $callLog->task) }}"
                                                        class="badge bg-primary text-decoration-none">
                                                         Task #{{ $callLog->task->id }}
                                                     </a>
@@ -167,19 +167,19 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a href="{{ route('call-logs.show', $callLog) }}" 
-                                                       class="btn btn-sm btn-outline-primary" 
+                                                    <a href="{{ route('call-logs.show', $callLog) }}"
+                                                       class="btn btn-sm btn-outline-primary"
                                                        data-bs-toggle="tooltip" title="View">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="{{ route('call-logs.edit', $callLog) }}" 
-                                                       class="btn btn-sm btn-outline-warning" 
+                                                    <a href="{{ route('call-logs.edit', $callLog) }}"
+                                                       class="btn btn-sm btn-outline-warning"
                                                        data-bs-toggle="tooltip" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <button type="button" 
-                                                            class="btn btn-sm btn-outline-danger" 
-                                                            data-bs-toggle="modal" 
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            data-bs-toggle="modal"
                                                             data-bs-target="#deleteModal{{ $callLog->id }}"
                                                             title="Delete">
                                                         <i class="fas fa-trash"></i>

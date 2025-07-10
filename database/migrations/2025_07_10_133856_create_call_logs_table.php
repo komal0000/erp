@@ -28,7 +28,7 @@ return new class extends Migration
             $table->text('follow_up_required')->nullable();
             $table->timestamp('follow_up_date')->nullable();
             $table->timestamps();
-            
+
             $table->index(['client_id', 'status']);
             $table->index(['employee_id', 'call_date']);
             $table->index(['status', 'priority']);

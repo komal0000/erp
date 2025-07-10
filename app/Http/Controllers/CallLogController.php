@@ -86,7 +86,7 @@ class CallLogController extends Controller
             'subject' => 'required|string|max:255',
             'description' => 'required|string',
             'notes' => 'nullable|string',
-            'priority' => 'required|in:low,medium,high,urgent',
+            'priority' => 'required|in:low,medium,high',
             'status' => 'required|integer|min:1|max:9',
             'call_date' => 'required|date',
             'duration_minutes' => 'nullable|integer|min:0',
@@ -141,7 +141,7 @@ class CallLogController extends Controller
      */
     public function show(CallLog $callLog)
     {
-        $callLog->load(['client', 'employee.user', 'task.assignedTo.user']);
+        $callLog->load(['client', 'employee.user', 'tasks.assignedEmployee.user']);
         return view('call-logs.show', compact('callLog'));
     }
 
@@ -151,7 +151,8 @@ class CallLogController extends Controller
     public function edit(CallLog $callLog)
     {
         $clients = Client::orderBy('company_name')->get();
-        return view('call-logs.edit', compact('callLog', 'clients'));
+        $employees = Employee::with('user')->orderBy('id')->get();
+        return view('call-logs.edit', compact('callLog', 'clients', 'employees'));
     }
 
     /**
@@ -167,7 +168,7 @@ class CallLogController extends Controller
             'subject' => 'required|string|max:255',
             'description' => 'required|string',
             'notes' => 'nullable|string',
-            'priority' => 'required|in:low,medium,high,urgent',
+            'priority' => 'required|in:low,medium,high',
             'status' => 'required|integer|min:1|max:9',
             'call_date' => 'required|date',
             'duration_minutes' => 'nullable|integer|min:0',

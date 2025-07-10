@@ -49,10 +49,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Client-specific routes
     Route::get('/clients/{client}/manage-access', [ClientController::class, 'manageAccess'])->name('clients.manage-access');
-    
+
     // Service-specific routes
     Route::patch('/services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
-    
+
     // Call log specific routes
     Route::patch('/call-logs/{call_log}/status', [CallLogController::class, 'updateStatus'])->name('call-logs.update-status');
 });
