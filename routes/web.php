@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DynamicFormController;
+use App\Http\Controllers\ServiceController;
 
 // CSRF Token refresh route
 Route::get('/csrf-token', function() {
@@ -40,9 +41,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('clients', ClientController::class);
     Route::resource('employees', EmployeeController::class);
     Route::resource('dynamic-forms', DynamicFormController::class);
+    Route::resource('services', ServiceController::class);
 
     // Client-specific routes
     Route::get('/clients/{client}/manage-access', [ClientController::class, 'manageAccess'])->name('clients.manage-access');
+
+    // Service-specific routes
+    Route::patch('/services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
 });
 
 // Public Dynamic Form Routes (for clients to fill)

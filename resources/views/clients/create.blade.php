@@ -171,9 +171,19 @@
                     <!-- Services -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Services</h5>
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                <h5 class="mb-0">Services</h5>
+                                <div class="btn-group">
+                                    <a href="{{ route('services.index') }}" class="btn btn-sm btn-outline-info" target="_blank">
+                                        <i class="fas fa-external-link-alt me-1"></i>Manage Services
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickServiceModal">
+                                        <i class="fas fa-plus me-1"></i>Quick Add Service
+                                    </button>
+                                </div>
+                            </div>
                             @if($services->count() > 0)
-                                <div class="row">
+                                <div class="row" id="servicesContainer">
                                     @foreach($services as $service)
                                         <div class="col-md-4 mb-2">
                                             <div class="form-check">
@@ -191,9 +201,9 @@
                                     @endforeach
                                 </div>
                             @else
-                                <div class="alert alert-info">
+                                <div class="alert alert-info" id="noServicesAlert">
                                     <i class="fas fa-info-circle me-2"></i>
-                                    No services available. <a href="#" class="alert-link">Contact administrator</a> to add services.
+                                    No services available. You can <button type="button" class="btn btn-link p-0 align-baseline" data-bs-toggle="modal" data-bs-target="#quickServiceModal">create a service</button> or <a href="{{ route('services.index') }}" class="alert-link" target="_blank">manage all services</a>.
                                 </div>
                             @endif
                         </div>
@@ -407,5 +417,144 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Quick Service Creation
+function createQuickService() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('quickServiceModal'));
+    const formData = new FormData(document.getElementById('quickServiceForm'));
+
+    fetch('{{ route("services.store") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add new service to the services list
+            const servicesContainer = document.getElementById('servicesContainer');
+            const noServicesAlert = document.getElementById('noServicesAlert');
+
+            if (noServicesAlert) {
+                noServicesAlert.style.display = 'none';
+            }
+
+            if (!servicesContainer) {
+                // If no services container exists, create one
+                const parentDiv = noServicesAlert.parentNode;
+                const newContainer = document.createElement('div');
+                newContainer.className = 'row';
+                newContainer.id = 'servicesContainer';
+                parentDiv.insertBefore(newContainer, noServicesAlert);
+            }
+
+            const serviceHtml = `
+                <div class="col-md-4 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="services[]"
+                               value="${data.service.id}" id="service_${data.service.id}" checked>
+                        <label class="form-check-label" for="service_${data.service.id}" title="${data.service.detail || ''}">
+                            ${data.service.name}
+                            ${data.service.detail ? `<i class="fas fa-info-circle text-muted ms-1" data-bs-toggle="tooltip" title="${data.service.detail}"></i>` : ''}
+                        </label>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('servicesContainer').insertAdjacentHTML('beforeend', serviceHtml);
+
+            // Reset form and close modal
+            document.getElementById('quickServiceForm').reset();
+            modal.hide();
+
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-2';
+            alertDiv.innerHTML = `
+                Service "${data.service.name}" created successfully and selected!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
+
+            // Auto-dismiss after 3 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        } else {
+            // Show error messages
+            const errorDiv = document.getElementById('quickServiceErrors');
+            errorDiv.innerHTML = '';
+            if (data.errors) {
+                Object.values(data.errors).forEach(error => {
+                    errorDiv.innerHTML += `<div class="text-danger small">${error[0]}</div>`;
+                });
+            } else {
+                errorDiv.innerHTML = '<div class="text-danger small">An error occurred while creating the service.</div>';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('quickServiceErrors').innerHTML = '<div class="text-danger small">Network error occurred.</div>';
+    });
+}
 </script>
 @endpush
+
+<!-- Quick Service Creation Modal -->
+<div class="modal fade" id="quickServiceModal" tabindex="-1" aria-labelledby="quickServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickServiceModalLabel">
+                    <i class="fas fa-plus me-2"></i>Quick Add Service
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quickServiceErrors"></div>
+                <form id="quickServiceForm">
+                    @csrf
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="mb-3">
+                                <label for="quickServiceName" class="form-label">Service Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="quickServiceName" name="name" required maxlength="255">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="mb-3">
+                                <label for="quickServiceType" class="form-label">Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="quickServiceType" name="type" required>
+                                    <option value="">Select...</option>
+                                    @for($i = 0; $i <= 10; $i++)
+                                        <option value="{{ $i }}">Type {{ $i }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quickServiceDetail" class="form-label">Detail</label>
+                        <textarea class="form-control" id="quickServiceDetail" name="detail" rows="3" maxlength="1000"></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="quickServiceActive" name="is_active" value="1" checked>
+                        <label class="form-check-label" for="quickServiceActive">
+                            Active Service
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createQuickService()">
+                    <i class="fas fa-save me-1"></i>Create & Select
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

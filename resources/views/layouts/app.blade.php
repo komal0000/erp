@@ -78,6 +78,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('services.*') ? 'active' : '' }}" href="{{ route('services.index') }}">
+                                <i class="fas fa-concierge-bell me-2"></i>Services
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('dynamic-forms.*') ? 'active' : '' }}" href="{{ route('dynamic-forms.index') }}">
                                 <i class="fas fa-clipboard-list me-2"></i>Dynamic Forms
                             </a>
