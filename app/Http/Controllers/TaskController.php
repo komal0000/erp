@@ -88,20 +88,15 @@ class TaskController extends Controller
 
     /**
      * Show the form for creating a new resource.
-     */
-    public function create(Request $request)
+     */    public function create(Request $request)
     {
         $clients = Client::orderBy('company_name')->get();
         $employees = Employee::with('user')->orderBy('id')->get();
-        $callLogs = CallLog::with('client')->orderBy('created_at', 'desc')->take(50)->get();
 
         // Auto-select client if coming from client view
         $selectedClientId = $request->get('client_id');
 
-        // Auto-select call log if coming from call log
-        $selectedCallLogId = $request->get('call_log_id');
-
-        return view('tasks.create', compact('clients', 'employees', 'callLogs', 'selectedClientId', 'selectedCallLogId'));
+        return view('tasks.create', compact('clients', 'employees', 'selectedClientId'));
     }
 
     /**
@@ -110,7 +105,6 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'call_log_id' => 'nullable|exists:call_logs,id',
             'client_id' => 'required|exists:clients,id',
             'assigned_to' => 'nullable|exists:employees,id',
             'title' => 'required|string|max:255',
@@ -124,6 +118,9 @@ class TaskController extends Controller
             'estimated_hours' => 'nullable|numeric|min:0',
             'actual_hours' => 'nullable|numeric|min:0'
         ]);
+
+        // Set call_log_id to null since we're creating standalone tasks
+        $validated['call_log_id'] = null;
 
         // Set created_by to current logged in employee
         if (Auth::user()->isEmployee()) {
@@ -158,9 +155,8 @@ class TaskController extends Controller
     {
         $clients = Client::orderBy('company_name')->get();
         $employees = Employee::with('user')->orderBy('id')->get();
-        $callLogs = CallLog::with('client')->orderBy('created_at', 'desc')->take(50)->get();
 
-        return view('tasks.edit', compact('task', 'clients', 'employees', 'callLogs'));
+        return view('tasks.edit', compact('task', 'clients', 'employees'));
     }
 
     /**
@@ -169,12 +165,11 @@ class TaskController extends Controller
     public function update(Request $request, Task $task)
     {
         $validated = $request->validate([
-            'call_log_id' => 'nullable|exists:call_logs,id',
             'client_id' => 'required|exists:clients,id',
             'assigned_to' => 'nullable|exists:employees,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'priority' => 'required|in:low,medium,high',
+            'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|integer|min:1|max:9',
             'due_date' => 'nullable|date',
             'started_at' => 'nullable|date',

@@ -8,7 +8,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
                         <h4>📋 Create New Task</h4>
-                        <small class="text-muted">Create a standalone task or link it to an existing call log</small>
+                        <small class="text-muted">Create a new task and assign it to team members</small>
                     </div>
                     <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-sm">
                         <i class="fas fa-arrow-left"></i> Back to Tasks
@@ -38,21 +38,6 @@
                                     <label for="title">Task Title *</label>
                                     <input type="text" name="title" id="title" class="form-control"
                                            value="{{ old('title') }}" required placeholder="Brief title for the task">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="call_log_id">Related Call Log</label>
-                                    <select name="call_log_id" id="call_log_id" class="form-control" onchange="updateClientFromCallLog()">
-                                        <option value="">Select a call log (optional)</option>
-                                        @foreach($callLogs as $callLog)
-                                            <option value="{{ $callLog->id }}"
-                                                    data-client-id="{{ $callLog->client_id }}"
-                                                    {{ old('call_log_id', $selectedCallLogId) == $callLog->id ? 'selected' : '' }}>
-                                                [{{ $callLog->id }}] {{ $callLog->subject }} - {{ $callLog->client->company_name ?? 'No Client' }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <small class="form-text text-muted">Select if this task is related to a specific call log</small>
                                 </div>
 
                                 <div class="form-group">
@@ -180,17 +165,6 @@
 
 @section('scripts')
 <script>
-// Update client selection when call log is selected
-function updateClientFromCallLog() {
-    const callLogSelect = document.getElementById('call_log_id');
-    const clientSelect = document.getElementById('client_id');
-    const selectedOption = callLogSelect.options[callLogSelect.selectedIndex];
-
-    if (selectedOption && selectedOption.dataset.clientId) {
-        clientSelect.value = selectedOption.dataset.clientId;
-    }
-}
-
 // Show/hide date fields based on status
 document.getElementById('status').addEventListener('change', function() {
     const status = parseInt(this.value);

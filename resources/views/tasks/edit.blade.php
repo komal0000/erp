@@ -44,21 +44,6 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="call_log_id">Related Call Log</label>
-                                    <select name="call_log_id" id="call_log_id" class="form-control" onchange="updateClientFromCallLog()">
-                                        <option value="">Select a call log (optional)</option>
-                                        @foreach($callLogs as $callLog)
-                                            <option value="{{ $callLog->id }}"
-                                                    data-client-id="{{ $callLog->client_id }}"
-                                                    {{ old('call_log_id', $task->call_log_id) == $callLog->id ? 'selected' : '' }}>
-                                                [{{ $callLog->id }}] {{ $callLog->subject }} - {{ $callLog->client->name ?? 'No Client' }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <small class="form-text text-muted">Select if this task is related to a specific call log</small>
-                                </div>
-
-                                <div class="form-group">
                                     <label for="client_id">Client *</label>
                                     <select name="client_id" id="client_id" class="form-control" required>
                                         <option value="">Select a client</option>
@@ -177,25 +162,13 @@
                             </div>
                         </div>
 
-                        <div class="form-group d-flex justify-content-between">
-                            <div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Update Task
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="window.history.back()">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                            </div>
-                            <div>
-                                @if($task->callLog)
-                                    <small class="text-muted">
-                                        Related to Call Log:
-                                        <a href="{{ route('call-logs.show', $task->callLog) }}" class="text-primary">
-                                            #{{ $task->callLog->id }} - {{ $task->callLog->subject }}
-                                        </a>
-                                    </small>
-                                @endif
-                            </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Task
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
                         </div>
                     </form>
 
@@ -228,17 +201,6 @@
 
 @section('scripts')
 <script>
-// Update client selection when call log is selected
-function updateClientFromCallLog() {
-    const callLogSelect = document.getElementById('call_log_id');
-    const clientSelect = document.getElementById('client_id');
-    const selectedOption = callLogSelect.options[callLogSelect.selectedIndex];
-
-    if (selectedOption && selectedOption.dataset.clientId) {
-        clientSelect.value = selectedOption.dataset.clientId;
-    }
-}
-
 // Show/hide date fields based on status
 document.getElementById('status').addEventListener('change', function() {
     const status = parseInt(this.value);
