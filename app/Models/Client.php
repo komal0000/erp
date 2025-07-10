@@ -78,4 +78,14 @@ class Client extends Model
         return $this->belongsToMany(Service::class, 'client_services')
                     ->withTimestamps();
     }
+
+    public function callLogs()
+    {
+        return $this->hasMany(CallLog::class);
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 }

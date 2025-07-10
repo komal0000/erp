@@ -8,6 +8,8 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DynamicFormController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\CallLogController;
+use App\Http\Controllers\TaskController;
 
 // CSRF Token refresh route
 Route::get('/csrf-token', function() {
@@ -42,12 +44,17 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('employees', EmployeeController::class);
     Route::resource('dynamic-forms', DynamicFormController::class);
     Route::resource('services', ServiceController::class);
+    Route::resource('call-logs', CallLogController::class);
+    Route::resource('tasks', TaskController::class);
 
     // Client-specific routes
     Route::get('/clients/{client}/manage-access', [ClientController::class, 'manageAccess'])->name('clients.manage-access');
-
+    
     // Service-specific routes
     Route::patch('/services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
+    
+    // Call log specific routes
+    Route::patch('/call-logs/{call_log}/status', [CallLogController::class, 'updateStatus'])->name('call-logs.update-status');
 });
 
 // Public Dynamic Form Routes (for clients to fill)

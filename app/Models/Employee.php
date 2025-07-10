@@ -43,4 +43,19 @@ class Employee extends Model
                     ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
                     ->withTimestamps();
     }
+
+    public function callLogs()
+    {
+        return $this->hasMany(CallLog::class);
+    }
+
+    public function assignedTasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    public function createdTasks()
+    {
+        return $this->hasMany(Task::class, 'created_by');
+    }
 }

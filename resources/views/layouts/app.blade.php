@@ -83,6 +83,16 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}" href="{{ route('call-logs.index') }}">
+                                <i class="fas fa-phone me-2"></i>Call Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">
+                                <i class="fas fa-tasks me-2"></i>Tasks
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('dynamic-forms.*') ? 'active' : '' }}" href="{{ route('dynamic-forms.index') }}">
                                 <i class="fas fa-clipboard-list me-2"></i>Dynamic Forms
                             </a>
@@ -90,6 +100,16 @@
                         @endif
 
                         @if(Auth::user()->isEmployee())
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}" href="{{ route('call-logs.index') }}">
+                                <i class="fas fa-phone me-2"></i>My Call Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">
+                                <i class="fas fa-tasks me-2"></i>My Tasks
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">
                                 <i class="fas fa-briefcase me-2"></i>My Clients
