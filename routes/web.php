@@ -10,6 +10,8 @@ use App\Http\Controllers\DynamicFormController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CallLogController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentCategoryController;
 
 // CSRF Token refresh route
 Route::get('/csrf-token', function() {
@@ -56,6 +58,16 @@ Route::middleware(['auth'])->group(function () {
     // Call log specific routes
     Route::patch('/call-logs/{call_log}/status', [CallLogController::class, 'updateStatus'])->name('call-logs.update-status');
     Route::get('/call-logs/client/{client}/contacts', [CallLogController::class, 'getClientContacts'])->name('call-logs.client-contacts');
+
+    // Document routes
+    Route::resource('documents', DocumentController::class);
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::get('/documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
+    Route::get('/documents/{document}/manage-access', [DocumentController::class, 'manageAccess'])->name('documents.manage-access');
+    Route::patch('/documents/{document}/access', [DocumentController::class, 'updateAccess'])->name('documents.update-access');
+
+    // Document category routes
+    Route::resource('document-categories', DocumentCategoryController::class);
 });
 
 // Public Dynamic Form Routes (for clients to fill)

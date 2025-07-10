@@ -93,6 +93,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}" href="{{ route('documents.index') }}">
+                                <i class="fas fa-folder me-2"></i>Documents
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('dynamic-forms.*') ? 'active' : '' }}" href="{{ route('dynamic-forms.index') }}">
                                 <i class="fas fa-clipboard-list me-2"></i>Dynamic Forms
                             </a>
@@ -108,6 +113,11 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">
                                 <i class="fas fa-tasks me-2"></i>My Tasks
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}" href="{{ route('documents.index') }}">
+                                <i class="fas fa-folder me-2"></i>Documents
                             </a>
                         </li>
                         <li class="nav-item">

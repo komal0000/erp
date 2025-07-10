@@ -358,13 +358,22 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Select2 for client selection
-    $('#client_id').select2({
-        theme: 'bootstrap-5',
-        placeholder: 'Search and select client...',
-        allowClear: true,
-        width: '100%'
-    });
+    console.log('DOM loaded, jQuery available:', typeof $ !== 'undefined');
+    console.log('Select2 available:', typeof $.fn.select2 !== 'undefined');
+
+    // Wait for jQuery and Select2 to be ready
+    if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+        // Initialize Select2 for client selection
+        $('#client_id').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Search and select client...',
+            allowClear: true,
+            width: '100%'
+        });
+        console.log('Select2 initialized for client_id');
+    } else {
+        console.error('jQuery or Select2 not available');
+    }
 
     // Auto-populate caller information when client is selected
     const clientSelect = document.getElementById('client_id');
@@ -372,33 +381,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const callerPhoneField = document.getElementById('caller_phone');
     const callerPhoneSelect = document.getElementById('caller_phone_select');
 
+    console.log('Client select element found:', clientSelect !== null);
+    console.log('Caller name field found:', callerNameField !== null);
+    console.log('Caller phone field found:', callerPhoneField !== null);
+    console.log('Caller phone select found:', callerPhoneSelect !== null);
+
     if (clientSelect) {
         clientSelect.addEventListener('change', function() {
             const clientId = this.value;
+            console.log('Client selected:', clientId);
 
             if (clientId) {
                 // Clear existing values
-                callerNameField.value = '';
-                callerPhoneField.value = '';
-                callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
+                if (callerNameField) callerNameField.value = '';
+                if (callerPhoneField) callerPhoneField.value = '';
+                if (callerPhoneSelect) callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
 
                 // Show loading state
-                callerNameField.placeholder = 'Loading...';
+                if (callerNameField) callerNameField.placeholder = 'Loading...';
 
                 // Fetch client contact information
+                console.log('Fetching contacts for client:', clientId);
                 fetch(`/call-logs/client/${clientId}/contacts`)
-                    .then(response => response.json())
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.json();
+                    })
                     .then(data => {
+                        console.log('Client contacts data:', data);
+
                         // Auto-fill caller name with primary contact
                         if (data.primary_contact) {
-                            callerNameField.value = data.primary_contact;
+                            if (callerNameField) callerNameField.value = data.primary_contact;
+                            console.log('Set caller name to:', data.primary_contact);
                         }
-                        callerNameField.placeholder = 'Enter caller\'s name';
+                        if (callerNameField) callerNameField.placeholder = 'Enter caller\'s name';
 
                         // Handle phone numbers
                         if (data.phones && data.phones.length > 0) {
+                            console.log('Found phone numbers:', data.phones.length);
                             // If multiple phone numbers, show select dropdown
                             if (data.phones.length > 1) {
+                                console.log('Multiple phones found, showing dropdown');
                                 data.phones.forEach(phone => {
                                     const option = document.createElement('option');
                                     option.value = phone.phone;
@@ -406,71 +430,89 @@ document.addEventListener('DOMContentLoaded', function() {
                                     if (phone.is_primary) {
                                         option.selected = true;
                                     }
-                                    callerPhoneSelect.appendChild(option);
+                                    if (callerPhoneSelect) callerPhoneSelect.appendChild(option);
                                 });
 
                                 // Show select dropdown and hide input
-                                callerPhoneSelect.style.display = 'block';
-                                callerPhoneField.style.display = 'none';
+                                if (callerPhoneSelect) callerPhoneSelect.style.display = 'block';
+                                if (callerPhoneField) callerPhoneField.style.display = 'none';
 
                                 // Set initial value from primary phone
                                 const primaryPhone = data.phones.find(p => p.is_primary) || data.phones[0];
                                 if (primaryPhone) {
-                                    callerPhoneSelect.value = primaryPhone.phone;
-                                    callerPhoneField.value = primaryPhone.phone;
+                                    if (callerPhoneSelect) callerPhoneSelect.value = primaryPhone.phone;
+                                    if (callerPhoneField) callerPhoneField.value = primaryPhone.phone;
+                                    console.log('Set primary phone to:', primaryPhone.phone);
                                 }
 
                                 // Listen for phone selection changes
-                                callerPhoneSelect.addEventListener('change', function() {
-                                    callerPhoneField.value = this.value;
-                                });
+                                if (callerPhoneSelect) {
+                                    callerPhoneSelect.addEventListener('change', function() {
+                                        if (callerPhoneField) callerPhoneField.value = this.value;
+                                        console.log('Phone selection changed to:', this.value);
+                                    });
+                                }
 
                             } else {
+                                console.log('Single phone found, auto-filling input');
                                 // Only one phone number, auto-fill input
-                                callerPhoneField.value = data.phones[0].phone;
-                                callerPhoneSelect.style.display = 'none';
-                                callerPhoneField.style.display = 'block';
+                                if (callerPhoneField) callerPhoneField.value = data.phones[0].phone;
+                                if (callerPhoneSelect) callerPhoneSelect.style.display = 'none';
+                                if (callerPhoneField) callerPhoneField.style.display = 'block';
+                                console.log('Set single phone to:', data.phones[0].phone);
                             }
                         } else {
+                            console.log('No phone numbers found');
                             // No phone numbers found
-                            callerPhoneSelect.style.display = 'none';
-                            callerPhoneField.style.display = 'block';
-                            callerPhoneField.placeholder = 'No phone numbers on file';
+                            if (callerPhoneSelect) callerPhoneSelect.style.display = 'none';
+                            if (callerPhoneField) {
+                                callerPhoneField.style.display = 'block';
+                                callerPhoneField.placeholder = 'No phone numbers on file';
+                            }
                         }
                     })
                     .catch(error => {
                         console.error('Error fetching client contacts:', error);
-                        callerNameField.placeholder = 'Enter caller\'s name';
-                        callerPhoneField.placeholder = 'Phone number';
+                        if (callerNameField) callerNameField.placeholder = 'Enter caller\'s name';
+                        if (callerPhoneField) callerPhoneField.placeholder = 'Phone number';
 
                         // Hide select and show input on error
-                        callerPhoneSelect.style.display = 'none';
-                        callerPhoneField.style.display = 'block';
+                        if (callerPhoneSelect) callerPhoneSelect.style.display = 'none';
+                        if (callerPhoneField) callerPhoneField.style.display = 'block';
                     });
             } else {
+                console.log('Client deselected, clearing fields');
                 // Client deselected, clear fields
-                callerNameField.value = '';
-                callerPhoneField.value = '';
-                callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
-                callerPhoneSelect.style.display = 'none';
-                callerPhoneField.style.display = 'block';
-                callerNameField.placeholder = 'Enter caller\'s name';
-                callerPhoneField.placeholder = 'Phone number';
+                if (callerNameField) callerNameField.value = '';
+                if (callerPhoneField) callerPhoneField.value = '';
+                if (callerPhoneSelect) callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
+                if (callerPhoneSelect) callerPhoneSelect.style.display = 'none';
+                if (callerPhoneField) callerPhoneField.style.display = 'block';
+                if (callerNameField) callerNameField.placeholder = 'Enter caller\'s name';
+                if (callerPhoneField) callerPhoneField.placeholder = 'Phone number';
             }
         });
+    } else {
+        console.error('Client select element not found');
     }
 
     // Disable task creation for resolved status
     const statusSelect = document.getElementById('status');
     const createTaskCheckbox = document.getElementById('create_task');
 
+    console.log('Status select element found:', statusSelect !== null);
+    console.log('Create task checkbox found:', createTaskCheckbox !== null);
+
     if (statusSelect && createTaskCheckbox) {
         statusSelect.addEventListener('change', function() {
+            console.log('Status changed to:', this.value);
             if (this.value == '8') { // Resolved status
                 createTaskCheckbox.checked = false;
                 createTaskCheckbox.disabled = true;
+                console.log('Disabled task creation for resolved status');
             } else {
                 createTaskCheckbox.disabled = false;
+                console.log('Enabled task creation');
             }
         });
 
@@ -478,6 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (statusSelect.value == '8') {
             createTaskCheckbox.checked = false;
             createTaskCheckbox.disabled = true;
+            console.log('Initial status is resolved, task creation disabled');
         }
     }
 
