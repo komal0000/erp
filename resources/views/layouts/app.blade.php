@@ -111,8 +111,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">
+                            <a class="nav-link {{ request()->routeIs('tasks.my-tasks') ? 'active' : '' }}" href="{{ route('tasks.my-tasks') }}">
                                 <i class="fas fa-tasks me-2"></i>My Tasks
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}" href="{{ route('tasks.index') }}">
+                                <i class="fas fa-list me-2"></i>All Tasks
                             </a>
                         </li>
                         <li class="nav-item">

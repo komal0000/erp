@@ -101,6 +101,31 @@ class Task extends Model
         return $query->where('priority', $priority);
     }
 
+    public function scopeAssignedTo($query, $employeeId)
+    {
+        return $query->where('assigned_to', $employeeId);
+    }
+
+    public function scopeStandalone($query)
+    {
+        return $query->whereNull('call_log_id');
+    }
+
+    public function scopeFromCallLog($query)
+    {
+        return $query->whereNotNull('call_log_id');
+    }
+
+    public function scopeDueToday($query)
+    {
+        return $query->whereDate('due_date', now()->toDateString());
+    }
+
+    public function scopeDueSoon($query, $days = 3)
+    {
+        return $query->whereBetween('due_date', [now(), now()->addDays($days)]);
+    }
+
     // Accessors
     public function getStatusLabelAttribute()
     {

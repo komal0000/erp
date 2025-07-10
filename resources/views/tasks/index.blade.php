@@ -51,6 +51,18 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @if(Auth::user()->isAdmin())
+                            <div class="col-md-3">
+                                <select name="assigned_to" class="form-select">
+                                    <option value="">All Employees</option>
+                                    @foreach($employees as $employee)
+                                        <option value="{{ $employee->id }}" {{ request('assigned_to') == $employee->id ? 'selected' : '' }}>
+                                            {{ $employee->user->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
                             <div class="col-md-3">
                                 <button type="submit" class="btn btn-outline-primary">
                                     <i class="fas fa-search me-1"></i>Filter

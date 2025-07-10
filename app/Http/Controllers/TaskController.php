@@ -20,7 +20,7 @@ class TaskController extends Controller
         $query = Task::with(['client', 'assignedEmployee.user', 'creator.user', 'callLog'])
                      ->orderBy('created_at', 'desc');
 
-        // Filter by employee role
+        // Filter by employee role - employees only see their assigned tasks
         if (Auth::user()->isEmployee()) {
             $query->where('assigned_to', Auth::user()->employee->id);
         }
@@ -40,22 +40,68 @@ class TaskController extends Controller
             $query->where('client_id', $request->client_id);
         }
 
+        // Filter by assigned employee (admin only)
+        if ($request->filled('assigned_to') && Auth::user()->isAdmin()) {
+            $query->where('assigned_to', $request->assigned_to);
+        }
+
+        $tasks = $query->paginate(15)->withQueryString();
+        $clients = Client::orderBy('company_name')->get();
+        $employees = Employee::with('user')->orderBy('id')->get();
+
+        return view('tasks.index', compact('tasks', 'clients', 'employees'));
+    }
+
+    /**
+     * Display employee's assigned tasks (My Tasks)
+     */
+    public function myTasks(Request $request)
+    {
+        if (!Auth::user()->isEmployee()) {
+            return redirect()->route('tasks.index');
+        }
+
+        $query = Task::with(['client', 'assignedEmployee.user', 'creator.user', 'callLog'])
+                     ->where('assigned_to', Auth::user()->employee->id)
+                     ->orderBy('created_at', 'desc');
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by priority
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        // Filter by client
+        if ($request->filled('client_id')) {
+            $query->where('client_id', $request->client_id);
+        }
+
         $tasks = $query->paginate(15)->withQueryString();
         $clients = Client::orderBy('company_name')->get();
 
-        return view('tasks.index', compact('tasks', 'clients'));
+        return view('tasks.my-tasks', compact('tasks', 'clients'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $clients = Client::orderBy('company_name')->get();
         $employees = Employee::with('user')->orderBy('id')->get();
         $callLogs = CallLog::with('client')->orderBy('created_at', 'desc')->take(50)->get();
 
-        return view('tasks.create', compact('clients', 'employees', 'callLogs'));
+        // Auto-select client if coming from client view
+        $selectedClientId = $request->get('client_id');
+
+        // Auto-select call log if coming from call log
+        $selectedCallLogId = $request->get('call_log_id');
+
+        return view('tasks.create', compact('clients', 'employees', 'callLogs', 'selectedClientId', 'selectedCallLogId'));
     }
 
     /**
@@ -69,9 +115,9 @@ class TaskController extends Controller
             'assigned_to' => 'nullable|exists:employees,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'priority' => 'required|in:low,medium,high',
+            'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|integer|min:1|max:9',
-            'due_date' => 'nullable|date|after:today',
+            'due_date' => 'nullable|date|after_or_equal:today',
             'started_at' => 'nullable|date',
             'completed_at' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -80,7 +126,15 @@ class TaskController extends Controller
         ]);
 
         // Set created_by to current logged in employee
-        $validated['created_by'] = Auth::user()->employee->id;
+        if (Auth::user()->isEmployee()) {
+            $validated['created_by'] = Auth::user()->employee->id;
+        } elseif (Auth::user()->isAdmin()) {
+            // Admin creating task - if no assignment specified, assign to self if they're also an employee
+            if (!$validated['assigned_to'] && Auth::user()->employee) {
+                $validated['assigned_to'] = Auth::user()->employee->id;
+            }
+            $validated['created_by'] = Auth::user()->employee ? Auth::user()->employee->id : null;
+        }
 
         $task = Task::create($validated);
 

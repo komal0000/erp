@@ -44,8 +44,8 @@
                                         @foreach($callLogs as $callLog)
                                             <option value="{{ $callLog->id }}"
                                                     data-client-id="{{ $callLog->client_id }}"
-                                                    {{ old('call_log_id', request('call_log_id')) == $callLog->id ? 'selected' : '' }}>
-                                                [{{ $callLog->id }}] {{ $callLog->subject }} - {{ $callLog->client->name ?? 'No Client' }}
+                                                    {{ old('call_log_id', $selectedCallLogId) == $callLog->id ? 'selected' : '' }}>
+                                                [{{ $callLog->id }}] {{ $callLog->subject }} - {{ $callLog->client->company_name ?? 'No Client' }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -57,8 +57,8 @@
                                     <select name="client_id" id="client_id" class="form-control" required>
                                         <option value="">Select a client</option>
                                         @foreach($clients as $client)
-                                            <option value="{{ $client->id }}" {{ old('client_id', request('client_id')) == $client->id ? 'selected' : '' }}>
-                                                {{ $client->name }}
+                                            <option value="{{ $client->id }}" {{ old('client_id', $selectedClientId) == $client->id ? 'selected' : '' }}>
+                                                {{ $client->company_name }}
                                             </option>
                                         @endforeach
                                     </select>

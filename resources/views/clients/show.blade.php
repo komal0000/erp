@@ -310,6 +310,9 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    <a href="{{ route('tasks.create', ['client_id' => $client->id]) }}" class="btn btn-outline-warning">
+                        <i class="fas fa-tasks me-2"></i>Create Task
+                    </a>
                     <a href="{{ route('documents.create', ['client_id' => $client->id]) }}" class="btn btn-outline-primary">
                         <i class="fas fa-upload me-2"></i>Upload Document
                     </a>

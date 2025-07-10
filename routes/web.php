@@ -50,6 +50,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('call-logs', CallLogController::class);
     Route::resource('tasks', TaskController::class);
 
+    // Task-specific routes
+    Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('tasks.my-tasks');
+
     // Client-specific routes
     Route::get('/clients/{client}/manage-access', [ClientController::class, 'manageAccess'])->name('clients.manage-access');
 
