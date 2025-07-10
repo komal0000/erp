@@ -20,30 +20,6 @@
         font-size: 2rem;
         margin-bottom: 0.5rem;
     }
-    .quick-actions {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 15px;
-        color: white;
-    }
-    .quick-action-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        border-radius: 8px;
-        padding: 15px;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        transition: all 0.3s ease;
-        min-height: 80px;
-    }
-    .quick-action-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        transform: translateY(-2px);
-    }
     .stats-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -54,44 +30,18 @@
 
 @section('content')
 <div class="container-fluid">
-    <!-- Header with Quick Actions -->
+    <!-- Header -->
     <div class="row mb-4">
-        <div class="col-md-8">
+        <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1">📁 Document Center</h2>
                     <p class="text-muted mb-0">Manage all your documents in one place</p>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="quick-actions p-3">
-                <h6 class="mb-3">⚡ Quick Actions</h6>
-                <div class="row g-2">
-                    <div class="col-6">
-                        <a href="{{ route('documents.create') }}" class="quick-action-btn">
-                            <i class="fas fa-upload"></i>
-                            <small class="mt-1">Upload Document</small>
-                        </a>
-                    </div>
-                    <div class="col-6">
-                        <a href="#" class="quick-action-btn" data-bs-toggle="modal" data-bs-target="#sendFormModal">
-                            <i class="fas fa-paper-plane"></i>
-                            <small class="mt-1">Send Form</small>
-                        </a>
-                    </div>
-                    <div class="col-6">
-                        <a href="{{ route('clients.index') }}" class="quick-action-btn">
-                            <i class="fas fa-edit"></i>
-                            <small class="mt-1">Edit Client</small>
-                        </a>
-                    </div>
-                    <div class="col-6">
-                        <a href="#" class="quick-action-btn" data-bs-toggle="modal" data-bs-target="#manageAccessModal">
-                            <i class="fas fa-users-cog"></i>
-                            <small class="mt-1">Manage Access</small>
-                        </a>
-                    </div>
+                <div>
+                    <a href="{{ route('documents.create') }}" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Upload Document
+                    </a>
                 </div>
             </div>
         </div>

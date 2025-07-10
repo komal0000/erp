@@ -94,10 +94,88 @@
         @endif
 
         <!-- Documents -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-folder me-2"></i>Client Documents ({{ $client->newDocuments->count() }})</h6>
+                <a href="{{ route('documents.create', ['client_id' => $client->id]) }}" class="btn btn-sm btn-light">
+                    <i class="fas fa-plus me-1"></i>Upload Document
+                </a>
+            </div>
+            <div class="card-body">
+                @if($client->newDocuments->count() > 0)
+                    <div class="row">
+                        @foreach($client->newDocuments->take(6) as $document)
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-start">
+                                            @php
+                                                $iconClass = match(strtolower($document->file_type)) {
+                                                    'pdf' => 'fas fa-file-pdf text-danger',
+                                                    'doc', 'docx' => 'fas fa-file-word text-primary',
+                                                    'xls', 'xlsx' => 'fas fa-file-excel text-success',
+                                                    'ppt', 'pptx' => 'fas fa-file-powerpoint text-warning',
+                                                    'jpg', 'jpeg', 'png', 'gif' => 'fas fa-file-image text-info',
+                                                    'zip', 'rar' => 'fas fa-file-archive text-secondary',
+                                                    default => 'fas fa-file text-muted'
+                                                };
+                                            @endphp
+                                            <i class="{{ $iconClass }} fa-2x me-3"></i>
+                                            <div class="flex-grow-1">
+                                                <h6 class="card-title mb-1">
+                                                    <a href="{{ route('documents.show', $document) }}" class="text-decoration-none">
+                                                        {{ Str::limit($document->title, 25) }}
+                                                    </a>
+                                                </h6>
+                                                @if($document->category)
+                                                    <span class="badge badge-sm mb-1" style="background-color: {{ $document->category->color }}">
+                                                        {{ $document->category->name }}
+                                                    </span>
+                                                @endif
+                                                <div class="small text-muted">
+                                                    <div>{{ $document->formatted_file_size }}</div>
+                                                    <div>{{ $document->created_at->format('M d, Y') }}</div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <a href="{{ route('documents.download', $document) }}" class="btn btn-sm btn-outline-primary me-1">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                    <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @if($client->newDocuments->count() > 6)
+                        <div class="text-center mt-3">
+                            <a href="{{ route('documents.index', ['client_id' => $client->id]) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-folder-open me-2"></i>View All Documents ({{ $client->newDocuments->count() }})
+                            </a>
+                        </div>
+                    @endif
+                @else
+                    <div class="text-center py-4">
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No documents uploaded yet</h6>
+                        <p class="text-muted">Upload documents related to this client to keep everything organized.</p>
+                        <a href="{{ route('documents.create', ['client_id' => $client->id]) }}" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload First Document
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Legacy Documents (if any) -->
         @if($client->documents->count() > 0)
         <div class="card shadow mb-4">
-            <div class="card-header bg-warning text-dark">
-                <h6 class="mb-0"><i class="fas fa-file-alt me-2"></i>Documents ({{ $client->documents->count() }})</h6>
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="fas fa-archive me-2"></i>Legacy Documents ({{ $client->documents->count() }})</h6>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -200,7 +278,7 @@
                 <div class="row text-center">
                     <div class="col-6">
                         <div class="border-end">
-                            <h4 class="text-primary">{{ $client->documents->count() }}</h4>
+                            <h4 class="text-primary">{{ $client->newDocuments->count() }}</h4>
                             <small class="text-muted">Documents</small>
                         </div>
                     </div>
@@ -232,17 +310,17 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="#" class="btn btn-outline-primary">
+                    <a href="{{ route('documents.create', ['client_id' => $client->id]) }}" class="btn btn-outline-primary">
                         <i class="fas fa-upload me-2"></i>Upload Document
+                    </a>
+                    <a href="{{ route('documents.index', ['client_id' => $client->id]) }}" class="btn btn-outline-info">
+                        <i class="fas fa-folder me-2"></i>View All Documents
                     </a>
                     <a href="#" class="btn btn-outline-success">
                         <i class="fas fa-clipboard-list me-2"></i>Send Form
                     </a>
                     <a href="{{ route('clients.edit', $client->id) }}" class="btn btn-outline-secondary">
                         <i class="fas fa-edit me-2"></i>Edit Client
-                    </a>
-                    <a href="#" class="btn btn-outline-info">
-                        <i class="fas fa-users me-2"></i>Manage Access
                     </a>
                 </div>
             </div>
