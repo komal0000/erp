@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\User;
 use App\Models\ClientPhone;
 use App\Models\ClientEmail;
+use App\Models\ClientEmployeeAccess;
 use App\Models\Employee;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +81,9 @@ class ClientController extends Controller
             // Assign employees if any
             if ($request->assigned_employees) {
                 foreach ($request->assigned_employees as $employeeId) {
-                    $client->assignedEmployees()->attach($employeeId, [
+                    ClientEmployeeAccess::create([
+                        'client_id' => $client->id,
+                        'employee_id' => $employeeId,
                         'permissions' => ['view_basic_info'],
                         'access_granted_date' => now(),
                         'is_active' => true,
@@ -184,10 +187,12 @@ class ClientController extends Controller
             ]);
 
             // Update employee assignments
-            $client->assignedEmployees()->detach(); // Remove existing assignments
+            ClientEmployeeAccess::where('client_id', $client->id)->delete(); // Remove existing assignments
             if ($request->assigned_employees) {
                 foreach ($request->assigned_employees as $employeeId) {
-                    $client->assignedEmployees()->attach($employeeId, [
+                    ClientEmployeeAccess::create([
+                        'client_id' => $client->id,
+                        'employee_id' => $employeeId,
                         'permissions' => ['view_basic_info'],
                         'access_granted_date' => now(),
                         'is_active' => true,
