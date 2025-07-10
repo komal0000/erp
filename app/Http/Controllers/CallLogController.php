@@ -70,7 +70,7 @@ class CallLogController extends Controller
      */
     public function create()
     {
-        $clients = ClientCacheService::getClientsCollection();
+        $clients = ClientCacheService::getClientsWithUser();
         $employees = Employee::with('user')->orderBy('id')->get();
         return view('call-logs.create', compact('clients', 'employees'));
     }
@@ -157,7 +157,7 @@ class CallLogController extends Controller
      */
     public function edit(CallLog $callLog)
     {
-        $clients = ClientCacheService::getClientsCollection();
+        $clients = ClientCacheService::getClientsWithUser();
         $employees = Employee::with('user')->orderBy('id')->get();
         return view('call-logs.edit', compact('callLog', 'clients', 'employees'));
     }

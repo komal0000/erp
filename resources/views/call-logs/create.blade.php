@@ -72,7 +72,7 @@
                                         <option value="">Select client...</option>
                                         @foreach($clients as $client)
                                             <option value="{{ $client->id }}"
-                                                    data-contact-name="{{ $client->user->name }}"
+                                                    data-contact-name="{{ $client->user ? $client->user->name : ($client->contact_person ?? 'N/A') }}"
                                                     {{ old('client_id') == $client->id ? 'selected' : '' }}>
                                                 {{ $client->company_name }}
                                             </option>
