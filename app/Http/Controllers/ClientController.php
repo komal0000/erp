@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Client;
+use App\Models\User;
+use App\Models\ClientPhone;
+use App\Models\ClientEmail;
+use App\Models\Employee;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+
+class ClientController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $clients = Client::with(['user', 'phones', 'emails'])->paginate(15);
+        return view('clients.index', compact('clients'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('clients.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:8',
+            'company_name' => 'required|string|max:255',
+            'address' => 'nullable|string',
+            'tax_id' => 'nullable|string',
+            'business_license' => 'nullable|string',
+            'services' => 'nullable|array',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Create user
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => User::ROLE_CLIENT,
+            ]);
+
+            // Create client
+            $client = Client::create([
+                'user_id' => $user->id,
+                'company_name' => $request->company_name,
+                'address' => $request->address,
+                'tax_id' => $request->tax_id,
+                'business_license' => $request->business_license,
+                'services' => $request->services,
+                'notes' => $request->notes,
+            ]);
+
+            DB::commit();
+            return redirect()->route('clients.index')->with('success', 'Client created successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->withErrors(['error' => 'Failed to create client: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $client = Client::with(['user', 'phones', 'emails', 'documents', 'images', 'formResponses.dynamicForm'])
+                        ->findOrFail($id);
+        return view('clients.show', compact('client'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $client = Client::with(['user', 'phones', 'emails'])->findOrFail($id);
+        return view('clients.edit', compact('client'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        $client = Client::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $client->user_id,
+            'company_name' => 'required|string|max:255',
+            'status' => 'required|in:active,inactive,suspended',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Update user
+            $client->user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
+
+            // Update client
+            $client->update([
+                'company_name' => $request->company_name,
+                'address' => $request->address,
+                'tax_id' => $request->tax_id,
+                'business_license' => $request->business_license,
+                'services' => $request->services,
+                'status' => $request->status,
+                'notes' => $request->notes,
+            ]);
+
+            DB::commit();
+            return redirect()->route('clients.show', $client->id)->with('success', 'Client updated successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->withErrors(['error' => 'Failed to update client: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        $client = Client::findOrFail($id);
+
+        try {
+            DB::beginTransaction();
+
+            $client->user->delete(); // This will cascade delete the client
+
+            DB::commit();
+            return redirect()->route('clients.index')->with('success', 'Client deleted successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->withErrors(['error' => 'Failed to delete client: ' . $e->getMessage()]);
+        }
+    }
+}
