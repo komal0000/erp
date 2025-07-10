@@ -16,12 +16,11 @@ class Client extends Model
         'tax_id',
         'business_license',
         'status',
-        'services',
         'notes'
     ];
 
     protected $casts = [
-        'services' => 'array',
+        // services removed since it's now a relationship
     ];
 
     // Relationships
@@ -71,6 +70,12 @@ class Client extends Model
     {
         return $this->belongsToMany(Employee::class, 'client_employee_accesses')
                     ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
+                    ->withTimestamps();
+    }
+
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'client_services')
                     ->withTimestamps();
     }
 }

@@ -9,6 +9,7 @@ use App\Models\ClientPhone;
 use App\Models\ClientEmail;
 use App\Models\ClientEmployeeAccess;
 use App\Models\Employee;
+use App\Models\Service;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
@@ -19,7 +20,7 @@ class ClientController extends Controller
      */
     public function index()
     {
-        $clients = Client::with(['user', 'phones', 'emails'])->paginate(15);
+        $clients = Client::with(['user', 'phones', 'emails', 'services'])->paginate(15);
         return view('clients.index', compact('clients'));
     }
 
@@ -29,7 +30,8 @@ class ClientController extends Controller
     public function create()
     {
         $employees = Employee::with('user')->where('status', 'active')->get();
-        return view('clients.create', compact('employees'));
+        $services = Service::active()->orderBy('name')->get();
+        return view('clients.create', compact('employees', 'services'));
     }
 
     /**
@@ -46,6 +48,7 @@ class ClientController extends Controller
             'tax_id' => 'nullable|string',
             'business_license' => 'nullable|string',
             'services' => 'nullable|array',
+            'services.*' => 'exists:services,id',
             'assigned_employees' => 'nullable|array',
             'assigned_employees.*' => 'exists:employees,id',
             'phones' => 'nullable|array',
@@ -74,7 +77,6 @@ class ClientController extends Controller
                 'address' => $request->address,
                 'tax_id' => $request->tax_id,
                 'business_license' => $request->business_license,
-                'services' => $request->services,
                 'notes' => $request->notes,
             ]);
 
@@ -89,6 +91,11 @@ class ClientController extends Controller
                         'is_active' => true,
                     ]);
                 }
+            }
+
+            // Assign services if any
+            if ($request->services) {
+                $client->services()->sync($request->services);
             }
 
             // Create phone numbers
@@ -129,7 +136,7 @@ class ClientController extends Controller
      */
     public function show(string $id)
     {
-        $client = Client::with(['user', 'phones', 'emails', 'documents', 'images', 'formResponses.dynamicForm'])
+        $client = Client::with(['user', 'phones', 'emails', 'services', 'documents', 'images', 'formResponses.dynamicForm'])
                         ->findOrFail($id);
         return view('clients.show', compact('client'));
     }
@@ -139,9 +146,10 @@ class ClientController extends Controller
      */
     public function edit(string $id)
     {
-        $client = Client::with(['user', 'phones', 'emails', 'assignedEmployees'])->findOrFail($id);
+        $client = Client::with(['user', 'phones', 'emails', 'assignedEmployees', 'services'])->findOrFail($id);
         $employees = Employee::with('user')->where('status', 'active')->get();
-        return view('clients.edit', compact('client', 'employees'));
+        $services = Service::active()->orderBy('name')->get();
+        return view('clients.edit', compact('client', 'employees', 'services'));
     }
 
     /**
@@ -156,6 +164,8 @@ class ClientController extends Controller
             'email' => 'required|email|unique:users,email,' . $client->user_id,
             'company_name' => 'required|string|max:255',
             'status' => 'required|in:active,inactive,suspended',
+            'services' => 'nullable|array',
+            'services.*' => 'exists:services,id',
             'assigned_employees' => 'nullable|array',
             'assigned_employees.*' => 'exists:employees,id',
             'phones' => 'nullable|array',
@@ -181,10 +191,16 @@ class ClientController extends Controller
                 'address' => $request->address,
                 'tax_id' => $request->tax_id,
                 'business_license' => $request->business_license,
-                'services' => $request->services,
                 'status' => $request->status,
                 'notes' => $request->notes,
             ]);
+
+            // Update services
+            if ($request->has('services')) {
+                $client->services()->sync($request->services);
+            } else {
+                $client->services()->detach();
+            }
 
             // Update employee assignments
             ClientEmployeeAccess::where('client_id', $client->id)->delete(); // Remove existing assignments

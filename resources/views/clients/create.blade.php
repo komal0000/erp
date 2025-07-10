@@ -172,44 +172,30 @@
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="border-bottom pb-2 mb-3">Services</h5>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="services[]" value="accounting" id="accounting">
-                                        <label class="form-check-label" for="accounting">Accounting</label>
-                                    </div>
+                            @if($services->count() > 0)
+                                <div class="row">
+                                    @foreach($services as $service)
+                                        <div class="col-md-4 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="services[]"
+                                                       value="{{ $service->id }}" id="service_{{ $service->id }}"
+                                                       {{ in_array($service->id, old('services', [])) ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="service_{{ $service->id }}" title="{{ $service->detail }}">
+                                                    {{ $service->name }}
+                                                    @if($service->detail)
+                                                        <i class="fas fa-info-circle text-muted ms-1" data-bs-toggle="tooltip" title="{{ $service->detail }}"></i>
+                                                    @endif
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="services[]" value="payroll" id="payroll">
-                                        <label class="form-check-label" for="payroll">Payroll</label>
-                                    </div>
+                            @else
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No services available. <a href="#" class="alert-link">Contact administrator</a> to add services.
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="services[]" value="tax_preparation" id="tax_preparation">
-                                        <label class="form-check-label" for="tax_preparation">Tax Preparation</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="services[]" value="bookkeeping" id="bookkeeping">
-                                        <label class="form-check-label" for="bookkeeping">Bookkeeping</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="services[]" value="hr_consulting" id="hr_consulting">
-                                        <label class="form-check-label" for="hr_consulting">HR Consulting</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="services[]" value="financial_planning" id="financial_planning">
-                                        <label class="form-check-label" for="financial_planning">Financial Planning</label>
-                                    </div>
-                                </div>
-                            </div>
+                            @endif
                         </div>
                     </div>
 

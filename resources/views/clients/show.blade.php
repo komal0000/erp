@@ -178,14 +178,14 @@
 
     <div class="col-lg-4">
         <!-- Services -->
-        @if($client->services)
+        @if(isset($client->services) && $client->services instanceof \Illuminate\Database\Eloquent\Collection && $client->services->count() > 0)
         <div class="card shadow mb-4">
             <div class="card-header bg-primary text-white">
                 <h6 class="mb-0"><i class="fas fa-briefcase me-2"></i>Services</h6>
             </div>
             <div class="card-body">
                 @foreach($client->services as $service)
-                    <span class="badge bg-primary me-1 mb-1">{{ ucfirst(str_replace('_', ' ', $service)) }}</span>
+                    <span class="badge bg-primary me-1 mb-1" title="{{ $service->detail }}">{{ $service->name }}</span>
                 @endforeach
             </div>
         </div>

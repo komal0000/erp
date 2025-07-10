@@ -221,30 +221,33 @@
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="border-bottom pb-2 mb-3">Services</h5>
-                            <div class="row">
-                                @php
-                                    $currentServices = old('services', $client->services ?? []);
-                                    $availableServices = [
-                                        'accounting' => 'Accounting',
-                                        'payroll' => 'Payroll',
-                                        'tax_preparation' => 'Tax Preparation',
-                                        'bookkeeping' => 'Bookkeeping',
-                                        'hr_consulting' => 'HR Consulting',
-                                        'financial_planning' => 'Financial Planning'
-                                    ];
-                                @endphp
-
-                                @foreach($availableServices as $value => $label)
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="services[]"
-                                               value="{{ $value }}" id="{{ $value }}"
-                                               {{ in_array($value, $currentServices) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="{{ $value }}">{{ $label }}</label>
-                                    </div>
+                            @if($services->count() > 0)
+                                <div class="row">
+                                    @php
+                                        $currentServiceIds = old('services', $client->services->pluck('id')->toArray());
+                                    @endphp
+                                    @foreach($services as $service)
+                                        <div class="col-md-4 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="services[]"
+                                                       value="{{ $service->id }}" id="service_{{ $service->id }}"
+                                                       {{ in_array($service->id, $currentServiceIds) ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="service_{{ $service->id }}" title="{{ $service->detail }}">
+                                                    {{ $service->name }}
+                                                    @if($service->detail)
+                                                        <i class="fas fa-info-circle text-muted ms-1" data-bs-toggle="tooltip" title="{{ $service->detail }}"></i>
+                                                    @endif
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                @endforeach
-                            </div>
+                            @else
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No services available. <a href="#" class="alert-link">Contact administrator</a> to add services.
+                                </div>
+                            @endif
                         </div>
                     </div>
 

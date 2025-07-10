@@ -33,13 +33,13 @@
                     <tr>
                         <td>
                             <strong>{{ $client->company_name }}</strong>
-                            @if($client->services)
+                            @if(isset($client->services) && $client->services instanceof \Illuminate\Database\Eloquent\Collection && $client->services->count() > 0)
                                 <br><small class="text-muted">
-                                    @foreach(array_slice($client->services, 0, 2) as $service)
-                                        <span class="badge bg-light text-dark me-1">{{ $service }}</span>
+                                    @foreach($client->services->take(2) as $service)
+                                        <span class="badge bg-light text-dark me-1">{{ $service->name }}</span>
                                     @endforeach
-                                    @if(count($client->services) > 2)
-                                        <span class="text-muted">+{{ count($client->services) - 2 }} more</span>
+                                    @if($client->services->count() > 2)
+                                        <span class="text-muted">+{{ $client->services->count() - 2 }} more</span>
                                     @endif
                                 </small>
                             @endif
