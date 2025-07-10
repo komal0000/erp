@@ -6,7 +6,10 @@
         <div class="col-md-10">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>Create New Task</h4>
+                    <div>
+                        <h4>📋 Create New Task</h4>
+                        <small class="text-muted">Create a standalone task or link it to an existing call log</small>
+                    </div>
                     <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-sm">
                         <i class="fas fa-arrow-left"></i> Back to Tasks
                     </a>
@@ -83,6 +86,7 @@
                                         <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low</option>
                                         <option value="medium" {{ old('priority', 'medium') == 'medium' ? 'selected' : '' }}>Medium</option>
                                         <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
+                                        <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
                                     </select>
                                 </div>
 
