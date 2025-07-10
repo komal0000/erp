@@ -104,9 +104,9 @@
                                         <input type="text" class="form-control" name="phones[0][phone]" placeholder="Phone number" value="{{ old('phones.0.phone') }}">
                                     </div>
                                     <div class="col-md-4">
-                                        <input type="text" class="form-control" name="phones[0][type]" 
-                                               placeholder="Type (e.g., Primary, Mobile)" 
-                                               list="phoneTypes" 
+                                        <input type="text" class="form-control" name="phones[0][type]"
+                                               placeholder="Type (e.g., Primary, Mobile)"
+                                               list="phoneTypes"
                                                value="{{ old('phones.0.type', 'Primary') }}">
                                         <datalist id="phoneTypes">
                                             <option value="Primary">
@@ -143,9 +143,9 @@
                                         <input type="email" class="form-control" name="emails[0][email]" placeholder="Additional email address" value="{{ old('emails.0.email') }}">
                                     </div>
                                     <div class="col-md-4">
-                                        <input type="text" class="form-control" name="emails[0][type]" 
-                                               placeholder="Type (e.g., Secondary, Billing)" 
-                                               list="emailTypes" 
+                                        <input type="text" class="form-control" name="emails[0][type]"
+                                               placeholder="Type (e.g., Secondary, Billing)"
+                                               list="emailTypes"
                                                value="{{ old('emails.0.type', 'Secondary') }}">
                                         <datalist id="emailTypes">
                                             <option value="Secondary">
@@ -319,8 +319,9 @@
         </div>
     </div>
 </div>
+@endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 // Employee assignment visual feedback
 document.addEventListener('DOMContentLoaded', function() {
@@ -340,8 +341,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Phone and Email Management
-    let phoneIndex = 1;
-    let emailIndex = 1;
+    let phoneIndex = 1; // Start from 1 since index 0 is already used
+    let emailIndex = 1; // Start from 1 since index 0 is already used
 
     // Add phone functionality
     document.getElementById('addPhone').addEventListener('click', function() {
@@ -352,9 +353,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="text" class="form-control" name="phones[${phoneIndex}][phone]" placeholder="Phone number">
                 </div>
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="phones[${phoneIndex}][type]" 
-                           placeholder="Type (e.g., Primary, Mobile)" 
-                           list="phoneTypes" 
+                    <input type="text" class="form-control" name="phones[${phoneIndex}][type]"
+                           placeholder="Type (e.g., Primary, Mobile)"
+                           list="phoneTypes"
                            value="Primary">
                 </div>
                 <div class="col-md-2">
@@ -378,9 +379,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="email" class="form-control" name="emails[${emailIndex}][email]" placeholder="Additional email address">
                 </div>
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="emails[${emailIndex}][type]" 
-                           placeholder="Type (e.g., Secondary, Billing)" 
-                           list="emailTypes" 
+                    <input type="text" class="form-control" name="emails[${emailIndex}][type]"
+                           placeholder="Type (e.g., Secondary, Billing)"
+                           list="emailTypes"
                            value="Secondary">
                 </div>
                 <div class="col-md-2">
@@ -421,5 +422,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endsection
-@endsection
+@endpush
