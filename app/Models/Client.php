@@ -66,4 +66,11 @@ class Client extends Model
                     ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
                     ->withTimestamps();
     }
+
+    public function assignedEmployees()
+    {
+        return $this->belongsToMany(Employee::class, 'client_employee_accesses')
+                    ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
+                    ->withTimestamps();
+    }
 }

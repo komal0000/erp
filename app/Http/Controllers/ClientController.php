@@ -27,7 +27,8 @@ class ClientController extends Controller
      */
     public function create()
     {
-        return view('clients.create');
+        $employees = Employee::with('user')->where('status', 'active')->get();
+        return view('clients.create', compact('employees'));
     }
 
     /**
@@ -44,6 +45,8 @@ class ClientController extends Controller
             'tax_id' => 'nullable|string',
             'business_license' => 'nullable|string',
             'services' => 'nullable|array',
+            'assigned_employees' => 'nullable|array',
+            'assigned_employees.*' => 'exists:employees,id',
         ]);
 
         try {
@@ -67,6 +70,17 @@ class ClientController extends Controller
                 'services' => $request->services,
                 'notes' => $request->notes,
             ]);
+
+            // Assign employees if any
+            if ($request->assigned_employees) {
+                foreach ($request->assigned_employees as $employeeId) {
+                    $client->assignedEmployees()->attach($employeeId, [
+                        'permissions' => ['view_basic_info'],
+                        'access_granted_date' => now(),
+                        'is_active' => true,
+                    ]);
+                }
+            }
 
             DB::commit();
             return redirect()->route('clients.index')->with('success', 'Client created successfully.');
@@ -92,8 +106,9 @@ class ClientController extends Controller
      */
     public function edit(string $id)
     {
-        $client = Client::with(['user', 'phones', 'emails'])->findOrFail($id);
-        return view('clients.edit', compact('client'));
+        $client = Client::with(['user', 'phones', 'emails', 'assignedEmployees'])->findOrFail($id);
+        $employees = Employee::with('user')->where('status', 'active')->get();
+        return view('clients.edit', compact('client', 'employees'));
     }
 
     /**
@@ -108,6 +123,8 @@ class ClientController extends Controller
             'email' => 'required|email|unique:users,email,' . $client->user_id,
             'company_name' => 'required|string|max:255',
             'status' => 'required|in:active,inactive,suspended',
+            'assigned_employees' => 'nullable|array',
+            'assigned_employees.*' => 'exists:employees,id',
         ]);
 
         try {
@@ -129,6 +146,18 @@ class ClientController extends Controller
                 'status' => $request->status,
                 'notes' => $request->notes,
             ]);
+
+            // Update employee assignments
+            $client->assignedEmployees()->detach(); // Remove existing assignments
+            if ($request->assigned_employees) {
+                foreach ($request->assigned_employees as $employeeId) {
+                    $client->assignedEmployees()->attach($employeeId, [
+                        'permissions' => ['view_basic_info'],
+                        'access_granted_date' => now(),
+                        'is_active' => true,
+                    ]);
+                }
+            }
 
             DB::commit();
             return redirect()->route('clients.show', $client->id)->with('success', 'Client updated successfully.');

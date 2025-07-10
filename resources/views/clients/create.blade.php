@@ -143,6 +143,53 @@
                         </div>
                     </div>
 
+                    <!-- Employee Assignment -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">Employee Assignment</h5>
+                            <p class="text-muted small mb-3">Select employees who will have access to this client's information</p>
+                            @if($employees->count() > 0)
+                                <div class="row">
+                                    @foreach($employees as $employee)
+                                        <div class="col-md-6 col-lg-4 mb-3">
+                                            <div class="card border">
+                                                <div class="card-body p-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                               name="assigned_employees[]" value="{{ $employee->id }}"
+                                                               id="employee_{{ $employee->id }}"
+                                                               {{ in_array($employee->id, old('assigned_employees', [])) ? 'checked' : '' }}>
+                                                        <label class="form-check-label w-100" for="employee_{{ $employee->id }}">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="flex-shrink-0">
+                                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                                        <i class="fas fa-user"></i>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex-grow-1 ms-3">
+                                                                    <h6 class="mb-0">{{ $employee->user->name }}</h6>
+                                                                    <small class="text-muted">{{ $employee->position }}</small>
+                                                                    @if($employee->department)
+                                                                        <br><small class="text-muted">{{ $employee->department }}</small>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No active employees available for assignment. <a href="{{ route('employees.create') }}">Create an employee</a> first.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Submit Buttons -->
                     <div class="row">
                         <div class="col-12">
@@ -171,6 +218,12 @@
                     via email and can access their dedicated dashboard.
                 </p>
 
+                <h6>Employee Assignment</h6>
+                <p class="small text-muted mb-3">
+                    Assign employees to this client to grant them access to client information and documents.
+                    Employees will be able to view and manage this client's data based on their permissions.
+                </p>
+
                 <h6>Required Fields</h6>
                 <ul class="small text-muted mb-3">
                     <li>Contact Person Name</li>
@@ -187,4 +240,26 @@
         </div>
     </div>
 </div>
+
+@section('scripts')
+<script>
+// Employee assignment visual feedback
+document.addEventListener('DOMContentLoaded', function() {
+    const employeeCheckboxes = document.querySelectorAll('input[name="assigned_employees[]"]');
+
+    employeeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.card');
+            if (this.checked) {
+                card.classList.add('border-primary');
+                card.style.backgroundColor = '#f8f9ff';
+            } else {
+                card.classList.remove('border-primary');
+                card.style.backgroundColor = '';
+            }
+        });
+    });
+});
+</script>
+@endsection
 @endsection
