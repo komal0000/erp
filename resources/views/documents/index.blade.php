@@ -270,7 +270,7 @@
                 <form>
                     <div class="mb-3">
                         <label class="form-label">Select Client</label>
-                        <select class="form-select">
+                        <select class="form-select client-select">
                             <option>Choose a client...</option>
                             @foreach($clients as $client)
                                 <option value="{{ $client->id }}">{{ $client->company_name }}</option>

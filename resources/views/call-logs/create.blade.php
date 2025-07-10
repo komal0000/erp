@@ -65,7 +65,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="client_id" class="form-label">Client <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('client_id') is-invalid @enderror"
+                                    <select class="form-select client-select @error('client_id') is-invalid @enderror"
                                             id="client_id"
                                             name="client_id"
                                             required>

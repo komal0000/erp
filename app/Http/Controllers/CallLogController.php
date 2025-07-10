@@ -6,6 +6,7 @@ use App\Models\CallLog;
 use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Task;
+use App\Services\ClientCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -58,7 +59,7 @@ class CallLogController extends Controller
 
         $callLogs = $query->paginate(15)->withQueryString();
 
-        $clients = Client::orderBy('company_name')->get();
+        $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
 
         return view('call-logs.index', compact('callLogs', 'clients', 'employees'));
@@ -69,7 +70,7 @@ class CallLogController extends Controller
      */
     public function create()
     {
-        $clients = Client::orderBy('company_name')->get();
+        $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
         return view('call-logs.create', compact('clients', 'employees'));
     }
@@ -156,7 +157,7 @@ class CallLogController extends Controller
      */
     public function edit(CallLog $callLog)
     {
-        $clients = Client::orderBy('company_name')->get();
+        $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
         return view('call-logs.edit', compact('callLog', 'clients', 'employees'));
     }
