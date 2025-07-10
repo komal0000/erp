@@ -58,13 +58,7 @@ class DocumentController extends Controller
         }
 
         // Apply access control
-        if (!Auth::user()->isAdmin()) {
-            $query->where(function($q) {
-                $q->where('is_public', true)
-                  ->orWhere('uploaded_by', Auth::id())
-                  ->orWhereJsonContains('access_permissions', Auth::id());
-            });
-        }
+        $query->accessibleBy(Auth::id());
 
         $documents = $query->paginate(20);
         $categories = DocumentCategory::active()->ordered()->get();
@@ -76,13 +70,14 @@ class DocumentController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $categories = DocumentCategory::getSelectOptions();
         $clients = Client::orderBy('company_name')->pluck('company_name', 'id');
         $users = User::where('id', '!=', Auth::id())->orderBy('name')->pluck('name', 'id');
+        $selectedClientId = $request->get('client_id');
 
-        return view('documents.create', compact('categories', 'clients', 'users'));
+        return view('documents.create', compact('categories', 'clients', 'users', 'selectedClientId'));
     }
 
     /**

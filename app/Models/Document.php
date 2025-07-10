@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class Document extends Model
 {
@@ -114,19 +115,127 @@ class Document extends Model
 
     public function hasAccess($userId)
     {
+        // Public documents are accessible to everyone
         if ($this->is_public) {
             return true;
         }
 
+        // Document uploader always has access
         if ($this->uploaded_by == $userId) {
             return true;
         }
 
+        // Check if user is admin
+        $user = User::find($userId);
+        if ($user && $user->role === 'admin') {
+            return true;
+        }
+
+        // For confidential documents, check specific access rules
+        if ($this->is_confidential) {
+            return $this->hasConfidentialAccess($userId);
+        }
+
+        // Check access permissions array
         if ($this->access_permissions && in_array($userId, $this->access_permissions)) {
             return true;
         }
 
         return false;
+    }
+
+    public function hasConfidentialAccess($userId)
+    {
+        $user = User::find($userId);
+
+        if (!$user) {
+            return false;
+        }
+
+        // Admin always has access
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        // If document belongs to a client
+        if ($this->client_id) {
+            // Client user has access to their own documents
+            if ($this->client && $this->client->user_id === $userId) {
+                return true;
+            }
+
+            // Check if employee is assigned to this client
+            if ($user->role === 'employee') {
+                $hasClientAccess = DB::table('client_employee_accesses')
+                    ->where('client_id', $this->client_id)
+                    ->where('employee_id', $user->id)
+                    ->where('is_active', true)
+                    ->exists();
+
+                if ($hasClientAccess) {
+                    return true;
+                }
+
+                // Check if employee is assigned to any service for this client
+                $hasServiceAccess = ClientService::where('client_id', $this->client_id)
+                    ->where('assigned_employee_id', $userId)
+                    ->exists();
+
+                if ($hasServiceAccess) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public function scopeAccessibleBy($query, $userId)
+    {
+        $user = User::find($userId);
+
+        if (!$user) {
+            return $query->where('id', null); // Return empty result
+        }
+
+        // Admin sees all documents
+        if ($user->role === 'admin') {
+            return $query;
+        }
+
+        return $query->where(function($q) use ($userId, $user) {
+            // Public documents
+            $q->where('is_public', true)
+              // User's own documents
+              ->orWhere('uploaded_by', $userId)
+              // Documents with explicit access
+              ->orWhereJsonContains('access_permissions', $userId);
+
+            // For employees, add client-specific access
+            if ($user->role === 'employee') {
+                $clientIds = DB::table('client_employee_accesses')
+                    ->where('employee_id', $user->id)
+                    ->where('is_active', true)
+                    ->pluck('client_id');
+
+                $serviceClientIds = ClientService::where('assigned_employee_id', $userId)
+                    ->pluck('client_id');
+
+                $allClientIds = $clientIds->merge($serviceClientIds)->unique();
+
+                if ($allClientIds->isNotEmpty()) {
+                    $q->orWhereIn('client_id', $allClientIds);
+                }
+            }
+
+            // For clients, add their own documents
+            if ($user->role === 'client') {
+                $client = Client::where('user_id', $userId)->first();
+                if ($client) {
+                    $q->orWhere('client_id', $client->id);
+                }
+            }
+        });
     }
 
     public function delete()

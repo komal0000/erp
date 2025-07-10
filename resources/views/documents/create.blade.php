@@ -123,7 +123,7 @@
                                             id="client_id" name="client_id">
                                         <option value="">Select client (optional)...</option>
                                         @foreach($clients as $id => $name)
-                                            <option value="{{ $id }}" {{ old('client_id') == $id ? 'selected' : '' }}>
+                                            <option value="{{ $id }}" {{ (old('client_id', $selectedClientId) == $id) ? 'selected' : '' }}>
                                                 {{ $name }}
                                             </option>
                                         @endforeach

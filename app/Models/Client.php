@@ -49,6 +49,11 @@ class Client extends Model
         return $this->hasMany(Document::class);
     }
 
+    public function clientServices()
+    {
+        return $this->hasMany(ClientService::class);
+    }
+
     public function images()
     {
         return $this->hasMany(ClientImage::class);

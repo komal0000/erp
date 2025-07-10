@@ -12,6 +12,7 @@ use App\Http\Controllers\CallLogController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentCategoryController;
+use App\Http\Controllers\ClientServiceController;
 
 // CSRF Token refresh route
 Route::get('/csrf-token', function() {
@@ -68,6 +69,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Document category routes
     Route::resource('document-categories', DocumentCategoryController::class);
+
+    // Client Service routes
+    Route::resource('client-services', ClientServiceController::class);
 });
 
 // Public Dynamic Form Routes (for clients to fill)
