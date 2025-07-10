@@ -2,6 +2,12 @@
 
 @section('title', 'Record New Call')
 
+@section('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row justify-content-center">
@@ -32,6 +38,30 @@
                             <div class="col-12">
                                 <h5 class="border-bottom pb-2 mb-3">Call Information</h5>
                             </div>
+
+                            <!-- Employee Selection (Admin Only) -->
+                            @if(Auth::user()->role === 'admin')
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employee_id" class="form-label">Assign to Employee</label>
+                                    <select class="form-select @error('employee_id') is-invalid @enderror"
+                                            id="employee_id"
+                                            name="employee_id">
+                                        <option value="">Select employee...</option>
+                                        @foreach($employees as $employee)
+                                            <option value="{{ $employee->id }}" {{ old('employee_id') == $employee->id ? 'selected' : '' }}>
+                                                {{ $employee->user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('employee_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Leave empty to assign to yourself</div>
+                                </div>
+                            </div>
+                            @endif
+
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="client_id" class="form-label">Client <span class="text-danger">*</span></label>
@@ -41,7 +71,9 @@
                                             required>
                                         <option value="">Select client...</option>
                                         @foreach($clients as $client)
-                                            <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
+                                            <option value="{{ $client->id }}"
+                                                    data-contact-name="{{ $client->user->name }}"
+                                                    {{ old('client_id') == $client->id ? 'selected' : '' }}>
                                                 {{ $client->company_name }}
                                             </option>
                                         @endforeach
@@ -51,6 +83,7 @@
                                     @enderror
                                 </div>
                             </div>
+
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="call_type" class="form-label">Call Type <span class="text-danger">*</span></label>
@@ -92,7 +125,7 @@
                             <div class="col-12">
                                 <h5 class="border-bottom pb-2 mb-3">Caller Information</h5>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="caller_name" class="form-label">Caller Name</label>
                                     <input type="text"
@@ -105,11 +138,18 @@
                                     @error('caller_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">Will auto-fill when client is selected</div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="caller_phone" class="form-label">Caller Phone</label>
+                                    <label for="caller_phone_select" class="form-label">Caller Phone</label>
+                                    <select class="form-select @error('caller_phone') is-invalid @enderror"
+                                            id="caller_phone_select"
+                                            name="caller_phone_select"
+                                            style="display: none;">
+                                        <option value="">Select phone number...</option>
+                                    </select>
                                     <input type="text"
                                            class="form-control @error('caller_phone') is-invalid @enderror"
                                            id="caller_phone"
@@ -120,9 +160,10 @@
                                     @error('caller_phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">Will show client phone options when available</div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="duration_minutes" class="form-label">Duration (minutes)</label>
                                     <input type="number"
@@ -307,19 +348,112 @@
         </div>
     </div>
 </div>
+@endsection
 
-@push('scripts')
+@section('scripts')
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Select2 for client selection
+    $('#client_id').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Search and select client...',
+        allowClear: true,
+        width: '100%'
+    });
+
     // Auto-populate caller information when client is selected
     const clientSelect = document.getElementById('client_id');
     const callerNameField = document.getElementById('caller_name');
+    const callerPhoneField = document.getElementById('caller_phone');
+    const callerPhoneSelect = document.getElementById('caller_phone_select');
 
     if (clientSelect) {
         clientSelect.addEventListener('change', function() {
-            if (this.value && !callerNameField.value) {
-                const selectedOption = this.options[this.selectedIndex];
-                // You can expand this to fetch more client details via AJAX if needed
+            const clientId = this.value;
+
+            if (clientId) {
+                // Clear existing values
+                callerNameField.value = '';
+                callerPhoneField.value = '';
+                callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
+
+                // Show loading state
+                callerNameField.placeholder = 'Loading...';
+
+                // Fetch client contact information
+                fetch(`/call-logs/client/${clientId}/contacts`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Auto-fill caller name with primary contact
+                        if (data.primary_contact) {
+                            callerNameField.value = data.primary_contact;
+                        }
+                        callerNameField.placeholder = 'Enter caller\'s name';
+
+                        // Handle phone numbers
+                        if (data.phones && data.phones.length > 0) {
+                            // If multiple phone numbers, show select dropdown
+                            if (data.phones.length > 1) {
+                                data.phones.forEach(phone => {
+                                    const option = document.createElement('option');
+                                    option.value = phone.phone;
+                                    option.textContent = `${phone.phone} (${phone.type}${phone.is_primary ? ' - Primary' : ''})`;
+                                    if (phone.is_primary) {
+                                        option.selected = true;
+                                    }
+                                    callerPhoneSelect.appendChild(option);
+                                });
+
+                                // Show select dropdown and hide input
+                                callerPhoneSelect.style.display = 'block';
+                                callerPhoneField.style.display = 'none';
+
+                                // Set initial value from primary phone
+                                const primaryPhone = data.phones.find(p => p.is_primary) || data.phones[0];
+                                if (primaryPhone) {
+                                    callerPhoneSelect.value = primaryPhone.phone;
+                                    callerPhoneField.value = primaryPhone.phone;
+                                }
+
+                                // Listen for phone selection changes
+                                callerPhoneSelect.addEventListener('change', function() {
+                                    callerPhoneField.value = this.value;
+                                });
+
+                            } else {
+                                // Only one phone number, auto-fill input
+                                callerPhoneField.value = data.phones[0].phone;
+                                callerPhoneSelect.style.display = 'none';
+                                callerPhoneField.style.display = 'block';
+                            }
+                        } else {
+                            // No phone numbers found
+                            callerPhoneSelect.style.display = 'none';
+                            callerPhoneField.style.display = 'block';
+                            callerPhoneField.placeholder = 'No phone numbers on file';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching client contacts:', error);
+                        callerNameField.placeholder = 'Enter caller\'s name';
+                        callerPhoneField.placeholder = 'Phone number';
+
+                        // Hide select and show input on error
+                        callerPhoneSelect.style.display = 'none';
+                        callerPhoneField.style.display = 'block';
+                    });
+            } else {
+                // Client deselected, clear fields
+                callerNameField.value = '';
+                callerPhoneField.value = '';
+                callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
+                callerPhoneSelect.style.display = 'none';
+                callerPhoneField.style.display = 'block';
+                callerNameField.placeholder = 'Enter caller\'s name';
+                callerPhoneField.placeholder = 'Phone number';
             }
         });
     }
@@ -338,10 +472,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Trigger on page load
-        statusSelect.dispatchEvent(new Event('change'));
+        // Initial check
+        if (statusSelect.value == '8') {
+            createTaskCheckbox.checked = false;
+            createTaskCheckbox.disabled = true;
+        }
+    }
+
+    // Auto-fill current date/time if not set
+    const callDateField = document.getElementById('call_date');
+    if (callDateField && !callDateField.value) {
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 16);
+        callDateField.value = formattedDate;
     }
 });
 </script>
-@endpush
 @endsection

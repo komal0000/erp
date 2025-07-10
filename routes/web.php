@@ -55,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Call log specific routes
     Route::patch('/call-logs/{call_log}/status', [CallLogController::class, 'updateStatus'])->name('call-logs.update-status');
+    Route::get('/call-logs/client/{client}/contacts', [CallLogController::class, 'getClientContacts'])->name('call-logs.client-contacts');
 });
 
 // Public Dynamic Form Routes (for clients to fill)

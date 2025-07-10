@@ -70,7 +70,8 @@ class CallLogController extends Controller
     public function create()
     {
         $clients = Client::orderBy('company_name')->get();
-        return view('call-logs.create', compact('clients'));
+        $employees = Employee::with('user')->orderBy('id')->get();
+        return view('call-logs.create', compact('clients', 'employees'));
     }
 
     /**
@@ -80,6 +81,7 @@ class CallLogController extends Controller
     {
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
+            'employee_id' => 'nullable|exists:employees,id',
             'caller_name' => 'nullable|string|max:255',
             'caller_phone' => 'nullable|string|max:20',
             'call_type' => 'required|in:incoming,outgoing',
@@ -95,8 +97,12 @@ class CallLogController extends Controller
             'create_task' => 'boolean'
         ]);
 
-        // Set employee_id to current logged in employee
-        $validated['employee_id'] = Auth::user()->employee->id;
+        // Set employee_id: use provided value for admins, or current user for employees
+        if (Auth::user()->role === 'admin' && $request->filled('employee_id')) {
+            $validated['employee_id'] = $request->employee_id;
+        } else {
+            $validated['employee_id'] = Auth::user()->employee->id;
+        }
 
         DB::beginTransaction();
         try {
@@ -249,5 +255,27 @@ class CallLogController extends Controller
                 'message' => 'Failed to update status: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get client contact information for AJAX
+     */
+    public function getClientContacts(Client $client)
+    {
+        $client->load(['phones', 'user']);
+
+        $contacts = [
+            'primary_contact' => $client->user->name,
+            'phones' => $client->phones->map(function($phone) {
+                return [
+                    'id' => $phone->id,
+                    'phone' => $phone->phone,
+                    'type' => $phone->type,
+                    'is_primary' => $phone->is_primary
+                ];
+            })->toArray()
+        ];
+
+        return response()->json($contacts);
     }
 }
